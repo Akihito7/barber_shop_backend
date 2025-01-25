@@ -3,25 +3,22 @@ import { AuthenticationController } from './authentication.controller';
 import { AuthenticationService } from './authentication.service';
 import { AuthenticationRepository } from './authentication.repository';
 import { JwtModule } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Global()
 @Module({
   imports: [
+    ConfigModule,
     JwtModule.registerAsync({
+      imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => {
-        return {
-          privateKey: configService.get<string>('JWT_PRIVATE_KEY'),
-          publicKey: configService.get<string>('JWT_PUBLIC_KEY'),
-          signOptions: {
-            algorithm: 'RS256',
-          },
-        };
-      },
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('JWT_SECRET'),
+      }),
     }),
   ],
   controllers: [AuthenticationController],
   providers: [AuthenticationService, AuthenticationRepository],
+  exports: [AuthenticationRepository],
 })
 export class AuthenticationModule {}
