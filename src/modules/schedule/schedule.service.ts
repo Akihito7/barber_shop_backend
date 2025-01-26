@@ -3,10 +3,14 @@ import { ScheduleRepository } from './schedule.repository';
 import { GetAppointmentsByDayRequestDto } from './dtos/request/get-appointments-by-day-request-dto';
 import { GetScheduleWithAvalabilityResponseDto } from './dtos/response/get-schedule-with-availability-response-dto';
 import { GetHoursFreeByEmployees, GetHoursOpen } from './types/schedule-types';
+import { OfferingsRepository } from '../offerings/offerings.repository';
 
 @Injectable()
 export class ScheduleService {
-  constructor(private readonly scheduleRepository: ScheduleRepository) {}
+  constructor(
+    private readonly scheduleRepository: ScheduleRepository,
+    private readonly offeringsRepository: OfferingsRepository,
+  ) {}
 
   private startHourInMinutes = 11 * 60;
   private endHourInMinutes = 21.5 * 60;
@@ -104,7 +108,7 @@ export class ScheduleService {
       }
     });
     const freeHours = allHours.filter((hour) => !occupiedSlots.has(hour));
-    const service = await this.scheduleRepository.getServiceDetails(serviceId);
+    const service = await this.offeringsRepository.getServiceDetails(serviceId);
     const requiredSlots = service.duration / 30;
     const consecutiveFreeHours: string[] = [];
     for (let i = 0; i <= freeHours.length - requiredSlots; i++) {

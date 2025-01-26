@@ -46,13 +46,4 @@ export class ScheduleRepository {
       .execute();
   }
   //Remover daqui ao criar o modulo pra employee
-
-  async getServiceDetails(serviceId: any) {
-    return this.db
-      .selectFrom('services')
-      .selectAll()
-      .where('id', '=', serviceId)
-      .executeTakeFirst();
-  }
-  //Remover daqui ao criar o modulo pra services
 }

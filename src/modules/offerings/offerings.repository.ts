@@ -1,0 +1,22 @@
+import { Inject, Injectable } from '@nestjs/common';
+import { Kysely } from 'kysely';
+import Database from 'src/database/schema/Database';
+
+@Injectable()
+export class OfferingsRepository {
+  constructor(
+    @Inject('DATABASE_CONNECTION') private readonly db: Kysely<Database>,
+  ) {}
+
+  async getServices() {
+    return this.db.selectFrom('services').selectAll().execute();
+  }
+
+  async getServiceDetails(serviceId: any) {
+    return this.db
+      .selectFrom('services')
+      .selectAll()
+      .where('id', '=', serviceId)
+      .executeTakeFirst();
+  }
+}
