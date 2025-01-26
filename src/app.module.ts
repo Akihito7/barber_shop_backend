@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthenticationModule } from './shared/modules/authentication/authentication.module';
 import { ScheduleModule } from './modules/schedule/schedule.module';
 import { OfferingsModule } from './modules/offerings/offerings.module';
+import { EmployeeModule } from './modules/employee/employee.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { OfferingsModule } from './modules/offerings/offerings.module';
     AuthenticationModule,
     ScheduleModule,
     OfferingsModule,
+    EmployeeModule,
   ],
   controllers: [AppController],
   providers: [AppService],
