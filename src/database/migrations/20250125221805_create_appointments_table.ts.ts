@@ -15,6 +15,7 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn('updated_at', 'timestamp', (col) =>
       col.defaultTo(sql`now()`).notNull(), 
     )
+    .addColumn('service_id', 'integer', (col) => col.notNull().references('services.id').onDelete('cascade')) 
     .execute();
 }
 
