@@ -27,6 +27,7 @@ export default interface AppointmentsTable {
   updatedAt: ColumnType<Date, Date | string | undefined, Date | string>;
 
   serviceId: ColumnType<ServicesId, ServicesId, ServicesId>;
+
 }
 
 export type Appointments = Selectable<AppointmentsTable>;
