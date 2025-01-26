@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { DatabaseModule } from './shared/modules/database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthenticationModule } from './shared/modules/authentication/authentication.module';
+import { ScheduleModule } from './modules/schedule/schedule.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { AuthenticationModule } from './shared/modules/authentication/authentica
       isGlobal: true,
     }),
     AuthenticationModule,
+    ScheduleModule,
   ],
   controllers: [AppController],
   providers: [AppService],
