@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { ScheduleRepository } from './schedule.repository';
 import { GetAppointmentsByDayRequestDto } from './dtos/request/get-appointments-by-day-request-dto';
 import { GetScheduleWithAvalabilityResponseDto } from './dtos/response/get-schedule-with-availability-response-dto';
 import { GetHoursFreeByEmployees, GetHoursOpen } from './types/schedule-types';
 import { OfferingsRepository } from '../offerings/offerings.repository';
 import { EmployeeRepository } from '../employee/employee.repository';
+import { CreateAppoitmentDto } from './dtos/request/create-appointment-dto';
 
 @Injectable()
 export class ScheduleService {
@@ -87,29 +88,32 @@ export class ScheduleService {
       intervalInMinutes: this.intervalInMinutes,
     });
     const occupiedSlots = new Set<string>();
-    appointments.forEach(({ startTime, endTime }) => {
-      const startInMinutes =
-        startTime.getUTCHours() * 60 + startTime.getUTCMinutes();
-      const endInMinutes = endTime.getUTCHours() * 60 + endTime.getUTCMinutes();
-      if (
-        endInMinutes <= this.startHourInMinutes ||
-        startInMinutes >= this.endHourInMinutes
-      )
-        return;
-      const startSlot = Math.max(this.startHourInMinutes, startInMinutes);
-      const endSlot = Math.min(this.endHourInMinutes, endInMinutes);
-      for (
-        let time = startSlot;
-        time < endSlot;
-        time += this.intervalInMinutes
-      ) {
-        const hours = Math.floor(time / 60);
-        const mins = time % 60;
-        occupiedSlots.add(
-          `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`,
-        );
-      }
-    });
+    appointments.forEach(
+      ({ startTime, endTime }: { startTime: any; endTime: any }) => {
+        const startInMinutes =
+          startTime.getUTCHours() * 60 + startTime.getUTCMinutes();
+        const endInMinutes =
+          endTime.getUTCHours() * 60 + endTime.getUTCMinutes();
+        if (
+          endInMinutes <= this.startHourInMinutes ||
+          startInMinutes >= this.endHourInMinutes
+        )
+          return;
+        const startSlot = Math.max(this.startHourInMinutes, startInMinutes);
+        const endSlot = Math.min(this.endHourInMinutes, endInMinutes);
+        for (
+          let time = startSlot;
+          time < endSlot;
+          time += this.intervalInMinutes
+        ) {
+          const hours = Math.floor(time / 60);
+          const mins = time % 60;
+          occupiedSlots.add(
+            `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`,
+          );
+        }
+      },
+    );
     const freeHours = allHours.filter((hour) => !occupiedSlots.has(hour));
     const service = await this.offeringsRepository.getServiceDetails(serviceId);
     const requiredSlots = service.duration / 30;
@@ -150,5 +154,44 @@ export class ScheduleService {
       return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
     });
     return allHours;
+  }
+
+  async createAppointment(data: CreateAppoitmentDto) {
+    const date = new Date(data.date);
+    const formattedDate = date.toISOString().split('T')[0];
+    const startDateWithHour = formattedDate + ' 00:00:00';
+    const endDateWithHour = formattedDate + ' 23:59:59';
+    const employee = await this.employeeRepository.getUser(data.barberId);
+    const freeHours = await this.getHoursFreeByEmployees({
+      employeeId: data.barberId,
+      employeeUsername: employee.username,
+      endDateWithHour,
+      startDateWithHour,
+      serviceId: data.serviceId,
+    });
+    if (!freeHours.freeHours.includes(data.hour)) {
+      throw new ConflictException('Horario ja agendado.');
+    }
+    const service = await this.offeringsRepository.getServiceDetails(
+      data.serviceId,
+    );
+    const durationInMinutes = service.duration;
+    let initialHour = `${formattedDate} ${data.hour}:00`;
+    const startDate = new Date(initialHour + ' UTC-3');
+    startDate.setMinutes(startDate.getMinutes() + durationInMinutes);
+    const endHour = startDate
+      .toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+      .replace(',', '')
+      .replace(' ', 'T');
+    await this.scheduleRepository.createAppointment({
+      barberId: data.barberId,
+      userId: data.userId,
+      date,
+      hour: data.hour,
+      serviceId: data.serviceId,
+      status: data.status,
+      startTime: initialHour,
+      endTime: endHour,
+    });
   }
 }
