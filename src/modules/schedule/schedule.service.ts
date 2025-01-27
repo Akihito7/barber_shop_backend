@@ -4,12 +4,14 @@ import { GetAppointmentsByDayRequestDto } from './dtos/request/get-appointments-
 import { GetScheduleWithAvalabilityResponseDto } from './dtos/response/get-schedule-with-availability-response-dto';
 import { GetHoursFreeByEmployees, GetHoursOpen } from './types/schedule-types';
 import { OfferingsRepository } from '../offerings/offerings.repository';
+import { EmployeeRepository } from '../employee/employee.repository';
 
 @Injectable()
 export class ScheduleService {
   constructor(
     private readonly scheduleRepository: ScheduleRepository,
     private readonly offeringsRepository: OfferingsRepository,
+    private readonly employeeRepository: EmployeeRepository,
   ) {}
 
   private startHourInMinutes = 11 * 60;
@@ -27,7 +29,7 @@ export class ScheduleService {
       endHourInMinutes: this.endHourInMinutes,
       intervalInMinutes: this.intervalInMinutes,
     });
-    const employees = await this.scheduleRepository.getEmployees();
+    const employees = await this.employeeRepository.getEmployees();
     const startDateWithHour = date + ' 00:00:00';
     const endDateWithHour = date + ' 23:59:59';
     const freeHoursByEmployee = await Promise.all(

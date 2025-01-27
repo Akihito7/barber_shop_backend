@@ -37,13 +37,4 @@ export class ScheduleRepository {
       .where('endTime', '<=', endDateWithHour)
       .execute();
   }
-
-  async getEmployees() {
-    return this.db
-      .selectFrom('users')
-      .select(['id', 'username'])
-      .where('role', '=', 'employee')
-      .execute();
-  }
-  //Remover daqui ao criar o modulo pra employee
 }
