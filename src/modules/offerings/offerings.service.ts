@@ -9,4 +9,8 @@ export class OfferingsService {
   async getServices(): Promise<GetServicesResposeDto[]> {
     return this.offeringsRepository.getServices();
   }
+
+  async getServiceDetails({ id }: { id: any }) {
+    return this.offeringsRepository.getServiceDetails(id);
+  }
 }

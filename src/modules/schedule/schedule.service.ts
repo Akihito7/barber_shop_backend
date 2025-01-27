@@ -42,6 +42,7 @@ export class ScheduleService {
       }),
     );
     const generalAvailability = hours.map((hour) => ({
+      date,
       hour,
       freeEmployees: [],
       status: 'free',
