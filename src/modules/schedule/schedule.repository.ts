@@ -64,4 +64,70 @@ export class ScheduleRepository {
       })
       .execute();
   }
+
+  async getScheduleWithDetailsByEmployee({
+    employeeId,
+    startDateWithHour,
+    endDateWithHour,
+  }: GetAppointmentsByEmployeeRepository) {
+    return this.db
+      .selectFrom('appointments as a')
+      .innerJoin('users as u', 'u.id', 'a.userId')
+      .innerJoin('services as s', 's.id', 'a.serviceId')
+      .select([
+        'a.id',
+        'a.userId',
+        'a.barberId',
+        'a.startTime',
+        'a.endTime',
+        'a.createdAt',
+        'a.updatedAt',
+        's.id as serviceId',
+        'a.paymentMethod',
+        's.description',
+        'u.photo',
+        'u.phoneNumber',
+        'u.username',
+        'u.lastLogin',
+        's.price',
+        's.duration',
+        's.name',
+        'u.email',
+        'a.status',
+      ])
+      .where('a.barberId', '=', employeeId)
+      .where('a.startTime', '>=', startDateWithHour)
+      .where('a.endTime', '<=', endDateWithHour)
+      .execute();
+  }
+  async finishAppointment(data: any) {
+    return this.db
+      .updateTable('appointments')
+      .set({
+        paymentMethod: data.methodPayment,
+        status: 'finish',
+      })
+      .where('appointments.id', '=', data.appointmentId)
+      .execute();
+  }
+
+  async registerPayment(data: any) {
+    return this.db
+      .insertInto('payments')
+      .values({
+        appointmentId: data.appointmentId,
+        paymentMethod: data.methodPayment,
+        paymentDate: data.paymentDate,
+        amount: data.amount,
+        paymentStatus: data.paymentStatus,
+      })
+      .execute();
+  }
+  async getAppointmentById(appointmentId: any) {
+    return this.db
+      .selectFrom('appointments')
+      .selectAll()
+      .where('id', '=', appointmentId)
+      .executeTakeFirst();
+  }
 }

@@ -28,6 +28,7 @@ export default interface AppointmentsTable {
 
   serviceId: ColumnType<ServicesId, ServicesId, ServicesId>;
 
+  paymentMethod: ColumnType<string, string | undefined, string>;
 }
 
 export type Appointments = Selectable<AppointmentsTable>;

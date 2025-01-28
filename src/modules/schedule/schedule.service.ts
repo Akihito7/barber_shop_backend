@@ -6,6 +6,7 @@ import { GetHoursFreeByEmployees, GetHoursOpen } from './types/schedule-types';
 import { OfferingsRepository } from '../offerings/offerings.repository';
 import { EmployeeRepository } from '../employee/employee.repository';
 import { CreateAppoitmentDto } from './dtos/request/create-appointment-dto';
+import { FinishAppointment } from './dtos/request/finishe-appointment-dto';
 
 @Injectable()
 export class ScheduleService {
@@ -194,4 +195,47 @@ export class ScheduleService {
       endTime: endHour,
     });
   }
+
+  async getScheduleWithDetailsByEmployee({
+    date,
+    employeeId,
+  }: {
+    date: any;
+    employeeId: any;
+  }) {
+    const startDateWithHour = `${date} 00:00:00`;
+    const endDateWithHour = `${date} 23:59:59`;
+    return this.scheduleRepository.getScheduleWithDetailsByEmployee({
+      employeeId,
+      endDateWithHour,
+      startDateWithHour,
+    });
+  }
+
+  async finishAppointment(data: FinishAppointment): Promise<void> {
+    const { status } = await this.scheduleRepository.getAppointmentById(
+      data.appointmentId,
+    );
+
+    if (status === 'finish')
+      throw new ConflictException('Serviço já está marcado como finalizado.');
+
+    if (data.methodPayment === 'STRIPE') {
+      //IMPLEMENTAR DEPOIS QUANDO INTEGRAR COM A STRIPE
+    }
+    const { price } = await this.offeringsRepository.getServiceDetails(
+      data.serviceId,
+    );
+    await this.scheduleRepository.finishAppointment(data);
+    const registerPayment = {
+      appointmentId: data.appointmentId,
+      paymentDate: new Date(),
+      amount: price,
+      methodPayment: data.methodPayment,
+      paymentStatus: 'Pago',
+    };
+    await this.scheduleRepository.registerPayment(registerPayment);
+  }
 }
+
+//Depois vou dividir isso duas funcoes, uma pra so finalizar o servico e outra pra verificar se ja foi pago antes de finalizar!

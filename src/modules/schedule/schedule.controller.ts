@@ -1,7 +1,8 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
 import { ScheduleService } from './schedule.service';
-import { GetScheduleWithAvalabilityResponseDto } from './dtos/response/get-schedule-with-availability-response-dto';
 import { CreateAppoitmentDto } from './dtos/request/create-appointment-dto';
+import { FinishAppointment } from './dtos/request/finishe-appointment-dto';
+import { GetScheduleWithAvalabilityResponseDto } from './dtos/response/get-schedule-with-availability-response-dto';
 
 @Controller('schedule')
 export class ScheduleController {
@@ -16,8 +17,22 @@ export class ScheduleController {
     });
   }
 
+  @Get()
+  async getAppointmentsByEmployee(@Query() query) {
+    return this.scheduleService.getScheduleWithDetailsByEmployee({
+      date: query.date,
+      employeeId: query.employeeId,
+    });
+  }
+
   @Post()
   async createAppointment(@Body() body: CreateAppoitmentDto) {
     return this.scheduleService.createAppointment(body);
+  }
+
+  @Post('/finish')
+  @HttpCode(201)
+  async finishAppointment(@Body() body: FinishAppointment): Promise<void> {
+    return this.scheduleService.finishAppointment(body);
   }
 }
