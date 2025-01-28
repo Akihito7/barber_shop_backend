@@ -1,7 +1,9 @@
-import { Controller, Get, Param, Req } from '@nestjs/common';
+import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
 import { EmployeeService } from './employee.service';
+import { AuthGuard } from 'src/guards/auth.guard';
 
 @Controller('employee')
+@UseGuards(AuthGuard)
 export class EmployeeController {
   constructor(private readonly employeeService: EmployeeService) {}
 

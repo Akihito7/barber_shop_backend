@@ -60,4 +60,12 @@ export class AuthenticationService {
       token,
     };
   }
+
+  async verifyToken(token: string) {
+    try {
+      return this.jwtService.verify(token);
+    } catch (error) {
+      throw new UnauthorizedException('Invalid or expired token.');
+    }
+  }
 }
