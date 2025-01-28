@@ -11,12 +11,13 @@ import { ScheduleService } from './schedule.service';
 import { CreateAppoitmentDto } from './dtos/request/create-appointment-dto';
 import { FinishAppointment } from './dtos/request/finishe-appointment-dto';
 import { AuthGuard } from 'src/guards/auth.guard';
+import { GetScheduleWithAvalabilityResponseDto } from './dtos/response/get-schedule-with-availability-response-dto';
 
 @Controller('schedule')
 @UseGuards(AuthGuard)
 export class ScheduleController {
   constructor(private readonly scheduleService: ScheduleService) {}
-  /*   @Get()
+  @Get('client')
   async getScheduleWithAvailability(
     @Query() query,
   ): Promise<GetScheduleWithAvalabilityResponseDto[]> {
@@ -24,7 +25,7 @@ export class ScheduleController {
       date: query.date,
       serviceId: query.serviceId,
     });
-  } */
+  }
 
   @Get()
   async getAppointmentsByEmployee(@Query() query) {
