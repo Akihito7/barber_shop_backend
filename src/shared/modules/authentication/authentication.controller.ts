@@ -1,4 +1,4 @@
-import { Body, Controller, HttpCode, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { SignupRequestDto } from './dtos/request/signup-request-dto';
 import { SignlnRequestDto } from './dtos/request/signln-request.dto';
@@ -15,7 +15,12 @@ export class AuthenticationController {
   }
 
   @Post('signln')
-  async signln(@Body() body: SignlnRequestDto) : Promise<SignlnResponseDto>{
+  async signln(@Body() body: SignlnRequestDto): Promise<SignlnResponseDto> {
     return this.authenticationService.signln(body);
+  }
+
+  @Get('validate-token')
+  async validateToken(@Query() query) {
+    return this.authenticationService.validateToken(query.token);
   }
 }

@@ -12,9 +12,9 @@ export class EmployeeController {
     return this.employeeService.getEmployees();
   }
 
-  @Get('/me/:id')
-  async getUser(@Param('id') id: any) {
-    return this.employeeService.getUser(id);
+  @Get('/me')
+  async getUser(@Req() req: any) {
+    return this.employeeService.getUser(req.user.id);
   }
 
   //remover pro modulo uses quando criado

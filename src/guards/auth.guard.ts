@@ -12,12 +12,11 @@ export class AuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const request = this.getRequest(context);
-    const { authorization } = request.headers;
+    const authorization = request.headers.authorization;
     const token = this.extractToken(authorization);
     const userId = await this.validateToken(token);
     this.attachUserToRequest(request, userId);
     return true;
-  
   }
   private getRequest(context: ExecutionContext) {
     return context.switchToHttp().getRequest();
@@ -44,7 +43,7 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Invalid or expired token.');
     }
   }
-  
+
   private attachUserToRequest(request: any, userId: number): void {
     request.user = {
       id: userId,

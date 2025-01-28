@@ -68,4 +68,17 @@ export class AuthenticationService {
       throw new UnauthorizedException('Invalid or expired token.');
     }
   }
+
+  async validateToken(token: string) {
+    try {
+      await this.verifyToken(token);
+      return {
+        isValidToken: true,
+      };
+    } catch (error) {
+      return {
+        isValidToken: false,
+      };
+    }
+  }
 }
