@@ -7,6 +7,7 @@ import { AuthenticationModule } from './shared/modules/authentication/authentica
 import { ScheduleModule } from './modules/schedule/schedule.module';
 import { OfferingsModule } from './modules/offerings/offerings.module';
 import { EmployeeModule } from './modules/employee/employee.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { EmployeeModule } from './modules/employee/employee.module';
     ScheduleModule,
     OfferingsModule,
     EmployeeModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],
