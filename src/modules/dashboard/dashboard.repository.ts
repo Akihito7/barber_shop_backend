@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Kysely } from 'kysely';
+import { Kysely, sql } from 'kysely';
 import Database from 'src/database/schema/Database';
 
 @Injectable()
@@ -9,35 +9,88 @@ export class DashboardRepository {
   ) {}
 
   async getDailyRevenue({ formattedInitialDate, formmatedEndDate }: any) {
-    return this.db
+    const result = await this.db
       .selectFrom('appointments as a')
       .innerJoin('services as s', 's.id', 'a.serviceId')
-      .select('s.price')
+      .select(({ fn }) => [fn.sum('s.price').as('dailyRevenue')])
       .where('a.startTime', '>=', formattedInitialDate)
       .where('a.endTime', '<=', formmatedEndDate)
       .where('a.status', '=', 'finish')
-      .execute();
+      .executeTakeFirst();
+
+    if (result.dailyRevenue === null) {
+      result.dailyRevenue = 0;
+      return result;
+    }
+
+    return result;
   }
 
   async getWeeklyRevenue({ formattedInitialDate, formmatedEndDate }: any) {
-    return this.db
+    const result = await this.db
       .selectFrom('appointments as a')
       .innerJoin('services as s', 's.id', 'a.serviceId')
-      .select('s.price')
+      .select(({ fn }) => [fn.sum('s.price').as('weeklyRevenue')])
       .where('a.startTime', '>=', formattedInitialDate)
       .where('a.endTime', '<=', formmatedEndDate)
       .where('a.status', '=', 'finish')
-      .execute();
+      .executeTakeFirst();
+
+    if (result.weeklyRevenue === null) {
+      result.weeklyRevenue = 0;
+      return result;
+    }
+
+    return result;
   }
 
   async getMonthlyRevenue({ formattedInitialDate, formmatedEndDate }: any) {
-    return this.db
+    const result = await this.db
       .selectFrom('appointments as a')
       .innerJoin('services as s', 's.id', 'a.serviceId')
-      .select('s.price')
+      .select(({ fn }) => [fn.sum('s.price').as('monthlyRevenue')])
       .where('a.startTime', '>=', formattedInitialDate)
       .where('a.endTime', '<=', formmatedEndDate)
       .where('a.status', '=', 'finish')
+      .executeTakeFirst();
+
+    if (result.monthlyRevenue === null) {
+      result.monthlyRevenue = 0;
+      return result;
+    }
+
+    return result;
+  }
+
+  async getTopSellingServices({ formattedInitialDate, formmatedEndDate }: any) {
+    return this.db
+      .selectFrom('appointments as a')
+      .innerJoin('services as s', 's.id', 'a.serviceId')
+      .select([
+        's.id',
+        's.name',
+        (eb) => eb.fn.count('s.id').as('total_by_service'),
+      ])
+      .where('a.startTime', '>=', formattedInitialDate)
+      .where('a.endTime', '<=', formmatedEndDate)
+      .groupBy(['s.id', 's.name'])
+      .execute();
+  }
+
+  async getRevenueBySemester({ formattedInitialDate, formmatedEndDate }: any) {
+    return this.db
+      .selectFrom('appointments as a')
+      .innerJoin('services as s', 's.id', 'a.serviceId')
+      .select([
+        (eb) => eb.fn.sum('s.price').as('total_revenue'),
+        (eb) => sql`TO_CHAR(start_time, 'YYYY-MM')`.as('monthCode'),
+        (eb) => sql`TO_CHAR(start_time, 'FMMonth')`.as('monthName'),
+        (eb) => eb.fn.countAll().as('total_records'),
+      ])
+      .where('startTime', '>=', formattedInitialDate)
+      .where('startTime', '<', formmatedEndDate)
+      .groupBy(['monthCode', 'monthName'])
+      .orderBy('monthCode')
       .execute();
   }
 }

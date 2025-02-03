@@ -67,4 +67,61 @@ export class DashboardService {
     nextMonth.setDate(nextMonth.getDate() - 1);
     return nextMonth;
   }
+
+  async getTopSellingServices(dateString: string) {
+    let formattedInitialDate;
+    let formmatedEndDate;
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const currentMonth = date.getMonth();
+
+    if (currentMonth < 6) {
+      const firstMonth = new Date(year, 0, 1);
+      const sixthMonth = new Date(year, 5, 1);
+      formattedInitialDate = `${firstMonth.toISOString().split('T')[0]} 00:00:00`;
+      formmatedEndDate = `${sixthMonth.toISOString().split('T')[0]} 23:59:59`;
+    } else {
+      const sixthMonth = new Date(year, 6, 1);
+      const twelfthMonth = new Date(year, 11, 1);
+      formattedInitialDate = `${sixthMonth.toISOString().split('T')[0]} 00:00:00`;
+      formmatedEndDate = `${twelfthMonth.toISOString().split('T')[0]} 23:59:59`;
+    }
+
+    return this.dashboardRepository.getTopSellingServices({
+      formattedInitialDate,
+      formmatedEndDate,
+    });
+  }
+
+  async getRevenueBySemester(dateString: string) {
+    let formattedInitialDate;
+    let formmatedEndDate;
+    const date = new Date(dateString);
+    const year = date.getFullYear();
+    const currentMonth = date.getMonth();
+
+    if (currentMonth < 6) {
+      const firstMonth = new Date(year, 0, 1);
+      const sixthMonth = new Date(year, 5, 1);
+      formattedInitialDate = `${firstMonth.toISOString().split('T')[0]} 00:00:00`;
+      formmatedEndDate = `${sixthMonth.toISOString().split('T')[0]} 23:59:59`;
+    } else {
+      const sixthMonth = new Date(year, 6, 1);
+      const twelfthMonth = new Date(year, 11, 1);
+      formattedInitialDate = `${sixthMonth.toISOString().split('T')[0]} 00:00:00`;
+      formmatedEndDate = `${twelfthMonth.toISOString().split('T')[0]} 23:59:59`;
+    }
+    const result = await this.dashboardRepository.getRevenueBySemester({
+      formattedInitialDate,
+      formmatedEndDate,
+    });
+
+    const startMonth = currentMonth < 6 ? 'January' : 'July';
+    const endMonth = currentMonth < 6 ? 'June' : 'December';
+    return {
+      startMonth,
+      endMonth,
+      result,
+    };
+  }
 }

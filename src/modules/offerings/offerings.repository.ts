@@ -19,4 +19,8 @@ export class OfferingsRepository {
       .where('id', '=', serviceId)
       .executeTakeFirst();
   }
+
+  async createService(data: any): Promise<void> {
+    await this.db.insertInto('services').values(data).execute();
+  }
 }
