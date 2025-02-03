@@ -33,6 +33,8 @@ export default interface UsersTable {
   lastLogin: ColumnType<Date | null, Date | string | null, Date | string | null>;
 
   isActive: ColumnType<boolean | null, boolean | null, boolean | null>;
+
+  roles: ColumnType<string[] | null, string[] | null, string[] | null>;
 }
 
 export type Users = Selectable<UsersTable>;
