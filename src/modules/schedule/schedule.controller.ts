@@ -12,6 +12,7 @@ import { CreateAppoitmentDto } from './dtos/request/create-appointment-dto';
 import { FinishAppointment } from './dtos/request/finishe-appointment-dto';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { GetScheduleWithAvalabilityResponseDto } from './dtos/response/get-schedule-with-availability-response-dto';
+import { ICreateAppointmentWithStripe } from './dtos/request/create-appointment-with-stripe-dto';
 
 @Controller('schedule')
 @UseGuards(AuthGuard)
@@ -35,9 +36,17 @@ export class ScheduleController {
     });
   }
 
-  @Post()
+  @Post('appointment/create')
   async createAppointment(@Body() body: CreateAppoitmentDto) {
     return this.scheduleService.createAppointment(body);
+  }
+
+  @Post('appointment/create-with-stripe')
+  async createAppointmentWithStripe(
+    @Body() body: ICreateAppointmentWithStripe,
+  ) {
+    console.log(body);
+    return this.scheduleService.createAppointmentWithStripe(body);
   }
 
   @Post('/finish')

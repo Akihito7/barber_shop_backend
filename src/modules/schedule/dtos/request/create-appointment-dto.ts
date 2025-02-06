@@ -1,4 +1,4 @@
-import { IsDateString, IsString } from 'class-validator';
+import { IsDateString, IsOptional, IsString } from 'class-validator';
 
 export class CreateAppoitmentDto {
   @IsString()
@@ -13,4 +13,18 @@ export class CreateAppoitmentDto {
   hour: string;
   @IsDateString()
   date: Date;
+  @IsString()
+  methodPayment: string;
+  @IsString()
+  @IsOptional()
+  cardType: string;
+  @IsString()
+  @IsOptional()
+  cardNumber: number;
+  @IsString()
+  @IsOptional()
+  cardExpiry: string;
+  @IsString()
+  @IsOptional()
+  cvc: number;
 }

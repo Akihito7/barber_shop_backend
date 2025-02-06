@@ -1,4 +1,8 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+} from '@nestjs/common';
 import { ScheduleRepository } from './schedule.repository';
 import { GetAppointmentsByDayRequestDto } from './dtos/request/get-appointments-by-day-request-dto';
 import { GetScheduleWithAvalabilityResponseDto } from './dtos/response/get-schedule-with-availability-response-dto';
@@ -7,14 +11,25 @@ import { OfferingsRepository } from '../offerings/offerings.repository';
 import { EmployeeRepository } from '../employee/employee.repository';
 import { CreateAppoitmentDto } from './dtos/request/create-appointment-dto';
 import { FinishAppointment } from './dtos/request/finishe-appointment-dto';
+import { ConfigService } from '@nestjs/config';
+import Stripe from 'stripe';
+import { PaymentService } from '../payment/payment.service';
+import { ICreateAppointmentWithStripe } from './dtos/request/create-appointment-with-stripe-dto';
 
 @Injectable()
 export class ScheduleService {
+  private stripe: Stripe;
   constructor(
     private readonly scheduleRepository: ScheduleRepository,
     private readonly offeringsRepository: OfferingsRepository,
     private readonly employeeRepository: EmployeeRepository,
-  ) {}
+    private readonly paymentService: PaymentService,
+    readonly configService: ConfigService,
+  ) {
+    this.stripe = new Stripe(configService.get('STRIPE_KEY'), {
+      apiVersion: '2025-01-27.acacia',
+    });
+  }
 
   private startHourInMinutes = 11 * 60;
   private endHourInMinutes = 21.5 * 60;
@@ -184,6 +199,7 @@ export class ScheduleService {
       .toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
       .replace(',', '')
       .replace(' ', 'T');
+
     await this.scheduleRepository.createAppointment({
       barberId: data.barberId,
       userId: data.userId,
@@ -194,6 +210,65 @@ export class ScheduleService {
       startTime: initialHour,
       endTime: endHour,
     });
+  }
+
+  async createAppointmentWithStripe(data: ICreateAppointmentWithStripe) {
+    const date = new Date(data.date);
+    const formattedDate = date.toISOString().split('T')[0];
+    const startDateWithHour = formattedDate + ' 00:00:00';
+    const endDateWithHour = formattedDate + ' 23:59:59';
+    const employee = await this.employeeRepository.getUser(data.barberId);
+    const freeHours = await this.getHoursFreeByEmployees({
+      employeeId: data.barberId,
+      employeeUsername: employee.username,
+      endDateWithHour,
+      startDateWithHour,
+      serviceId: data.serviceId,
+    });
+    if (!freeHours.freeHours.includes(data.hour)) {
+      throw new ConflictException('Horario ja agendado.');
+    }
+    const service = await this.offeringsRepository.getServiceDetails(
+      data.serviceId,
+    );
+    const durationInMinutes = service.duration;
+    let initialHour = `${formattedDate} ${data.hour}:00`;
+    const startDate = new Date(initialHour + ' UTC-3');
+    startDate.setMinutes(startDate.getMinutes() + durationInMinutes);
+    const endHour = startDate
+      .toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+      .replace(',', '')
+      .replace(' ', 'T');
+
+    try {
+      const result: any = await this.paymentService.paymentWithStripe(data);
+      if (result && result.ok) {
+        const [result] = await this.scheduleRepository.createAppointment({
+          barberId: data.barberId,
+          userId: data.userId,
+          date,
+          hour: data.hour,
+          serviceId: data.serviceId,
+          status: data.status,
+          startTime: initialHour,
+          endTime: endHour,
+        });
+        const service = await this.offeringsRepository.getServiceDetails(
+          data.serviceId,
+        );
+        await this.paymentService.createPayment({
+          appointmentId: result.id,
+          amount: service.price,
+          paymentDate: new Date(),
+          paymentMethod: data.methodPayment,
+          paymentStatus: 'Pago',
+        });
+      }
+    } catch (error) {
+      throw new BadRequestException(
+        'O pagamento não foi autorizado. Verifique os dados do cartão.',
+      );
+    }
   }
 
   async getScheduleWithDetailsByEmployee({
@@ -220,9 +295,6 @@ export class ScheduleService {
     if (status === 'finish')
       throw new ConflictException('Serviço já está marcado como finalizado.');
 
-    if (data.methodPayment === 'STRIPE') {
-      //IMPLEMENTAR DEPOIS QUANDO INTEGRAR COM A STRIPE
-    }
     const { price } = await this.offeringsRepository.getServiceDetails(
       data.serviceId,
     );

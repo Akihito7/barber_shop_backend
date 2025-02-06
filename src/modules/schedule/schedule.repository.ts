@@ -62,6 +62,7 @@ export class ScheduleRepository {
         startTime,
         endTime,
       })
+      .returning(['id'])
       .execute();
   }
 

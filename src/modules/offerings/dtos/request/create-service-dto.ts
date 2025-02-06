@@ -12,4 +12,5 @@ export class CreateServiceDto {
 
   @IsNumber()
   duration: number;
+
 }
