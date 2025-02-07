@@ -8,6 +8,7 @@ import { ScheduleModule } from './modules/schedule/schedule.module';
 import { OfferingsModule } from './modules/offerings/offerings.module';
 import { EmployeeModule } from './modules/employee/employee.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { ManagementBarberShopModule } from './modules/management-barber-shop/management-barber-shop.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     OfferingsModule,
     EmployeeModule,
     DashboardModule,
+    ManagementBarberShopModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -124,11 +124,22 @@ export class ScheduleRepository {
       })
       .execute();
   }
+
   async getAppointmentById(appointmentId: any) {
     return this.db
       .selectFrom('appointments')
       .selectAll()
       .where('id', '=', appointmentId)
       .executeTakeFirst();
+  }
+
+  async getAppointmentByClient(userId: any) {
+    return this.db
+      .selectFrom('appointments')
+      .innerJoin('services', 'services.id', 'appointments.serviceId')
+      .where('userId', '=', userId)
+      .where('status', '=', 'schedule')
+      .selectAll()
+      .execute();
   }
 }

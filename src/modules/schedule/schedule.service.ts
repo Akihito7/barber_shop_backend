@@ -308,6 +308,15 @@ export class ScheduleService {
     };
     await this.scheduleRepository.registerPayment(registerPayment);
   }
+
+  async getAppointmentByClient(userId: number) {
+    if (!userId) {
+      throw new BadRequestException(
+        'Erro ao tentar pegar a agenda do cliente. Reloque e tente novamente!',
+      );
+    }
+    return this.scheduleRepository.getAppointmentByClient(userId);
+  }
 }
 
 //Depois vou dividir isso duas funcoes, uma pra so finalizar o servico e outra pra verificar se ja foi pago antes de finalizar!
