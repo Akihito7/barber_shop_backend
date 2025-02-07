@@ -1,20 +1,20 @@
-import { IsDateString, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateAppoitmentDto {
   @IsString()
   userId: string;
   @IsString()
   barberId: string;
-  @IsString()
-  status: string;
+  @IsNumber()
+  status: IStatus;
   @IsString()
   serviceId: string;
   @IsString()
   hour: string;
   @IsDateString()
   date: Date;
-  @IsString()
-  methodPayment: string;
+  @IsNumber()
+  methodPayment: number;
   @IsString()
   @IsOptional()
   cardType: string;
@@ -28,3 +28,9 @@ export class CreateAppoitmentDto {
   @IsOptional()
   cvc: number;
 }
+
+type IStatus = 1 | 2 | 3 | 4;
+//1 - Agendado
+//2 - Em Andamento
+//3 - Finalizado
+//4 - Cancelado

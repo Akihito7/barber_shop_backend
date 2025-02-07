@@ -49,4 +49,8 @@ export class PaymentService {
   async createPayment(data: ICreatePayment) {
     return this.paymentRepository.createPayment(data);
   }
+
+  async getPaymentByAppointmentId(appointmentId : any){
+    return this.paymentRepository.getPaymentByAppointmentId(appointmentId)
+  }
 }

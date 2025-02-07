@@ -200,15 +200,23 @@ export class ScheduleService {
       .replace(',', '')
       .replace(' ', 'T');
 
-    await this.scheduleRepository.createAppointment({
+    const [result] = await this.scheduleRepository.createAppointment({
       barberId: data.barberId,
       userId: data.userId,
       date,
       hour: data.hour,
       serviceId: data.serviceId,
-      status: data.status,
+      statusId: data.status,
       startTime: initialHour,
       endTime: endHour,
+    });
+
+    await this.paymentService.createPayment({
+      appointmentId: result.id,
+      amount: service.price,
+      paymentDate: new Date(),
+      paymentStatusId: 1,
+      paymentMethodsId: data.methodPayment,
     });
   }
 
@@ -249,7 +257,7 @@ export class ScheduleService {
           date,
           hour: data.hour,
           serviceId: data.serviceId,
-          status: data.status,
+          statusId: data.status,
           startTime: initialHour,
           endTime: endHour,
         });
@@ -260,8 +268,8 @@ export class ScheduleService {
           appointmentId: result.id,
           amount: service.price,
           paymentDate: new Date(),
-          paymentMethod: data.methodPayment,
-          paymentStatus: 'Pago',
+          paymentStatusId: 2,
+          paymentMethodsId: data.methodPayment,
         });
       }
     } catch (error) {
@@ -288,11 +296,24 @@ export class ScheduleService {
   }
 
   async finishAppointment(data: FinishAppointment): Promise<void> {
-    const { status } = await this.scheduleRepository.getAppointmentById(
+    const { statusId } = await this.scheduleRepository.getAppointmentById(
       data.appointmentId,
     );
 
-    if (status === 'finish')
+    console.log(data);
+
+    const { paymentStatusId, id: paymentId } =
+      await this.paymentService.getPaymentByAppointmentId(data.appointmentId);
+
+    if (paymentStatusId === 2 && statusId === 1) {
+      await this.scheduleRepository.finishAppointment(data);
+      throw new ConflictException('Serviço já foi pago.');
+    }
+    if (paymentStatusId === 2) {
+      throw new ConflictException('Serviço já foi pago.');
+    }
+
+    if (statusId === 3)
       throw new ConflictException('Serviço já está marcado como finalizado.');
 
     const { price } = await this.offeringsRepository.getServiceDetails(
@@ -304,9 +325,9 @@ export class ScheduleService {
       paymentDate: new Date(),
       amount: price,
       methodPayment: data.methodPayment,
-      paymentStatus: 'Pago',
+      paymentStatatusId: 3 as any,
     };
-    await this.scheduleRepository.registerPayment(registerPayment);
+    await this.scheduleRepository.updatedPaymentToFinish(paymentId);
   }
 
   async getAppointmentByClient(userId: number) {

@@ -11,9 +11,9 @@ export class ICreatePayment {
   @IsDateString()
   paymentDate: string | Date;
 
-  @IsString()
-  paymentMethod: string;
+  @IsNumber()
+  paymentStatusId: number;
 
-  @IsString()
-  paymentStatus: string;
+  @IsNumber()
+  paymentMethodsId: number;
 }

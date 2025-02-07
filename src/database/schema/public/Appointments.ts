@@ -3,6 +3,7 @@
 
 import type { UsersId } from './Users';
 import type { ServicesId } from './Services';
+import type { AppointmentsStatusId } from './AppointmentsStatus';
 import type { ColumnType, Selectable, Insertable, Updateable } from 'kysely';
 
 /** Identifier type for public.appointments */
@@ -20,8 +21,6 @@ export default interface AppointmentsTable {
 
   endTime: ColumnType<Date, Date | string, Date | string>;
 
-  status: ColumnType<string, string, string>;
-
   createdAt: ColumnType<Date, Date | string | undefined, Date | string>;
 
   updatedAt: ColumnType<Date, Date | string | undefined, Date | string>;
@@ -29,6 +28,8 @@ export default interface AppointmentsTable {
   serviceId: ColumnType<ServicesId, ServicesId, ServicesId>;
 
   paymentMethod: ColumnType<string, string | undefined, string>;
+
+  statusId: ColumnType<AppointmentsStatusId | null, AppointmentsStatusId | null, AppointmentsStatusId | null>;
 }
 
 export type Appointments = Selectable<AppointmentsTable>;

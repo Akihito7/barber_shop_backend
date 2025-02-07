@@ -48,7 +48,7 @@ export class ScheduleRepository {
     userId,
     barberId,
     serviceId,
-    status,
+    statusId,
     startTime,
     endTime,
   }: any) {
@@ -58,7 +58,7 @@ export class ScheduleRepository {
         userId,
         barberId,
         serviceId,
-        status,
+        statusId,
         startTime,
         endTime,
       })
@@ -75,6 +75,9 @@ export class ScheduleRepository {
       .selectFrom('appointments as a')
       .innerJoin('users as u', 'u.id', 'a.userId')
       .innerJoin('services as s', 's.id', 'a.serviceId')
+      .innerJoin('appointmentsStatus as as', 'a.statusId', 'as.id')
+      .leftJoin('payments as p', 'p.appointmentId', 'a.id')
+      .leftJoin('paymentMethods as pm', 'pm.id', 'p.paymentMethodsId')
       .select([
         'a.id',
         'a.userId',
@@ -84,7 +87,6 @@ export class ScheduleRepository {
         'a.createdAt',
         'a.updatedAt',
         's.id as serviceId',
-        'a.paymentMethod',
         's.description',
         'u.photo',
         'u.phoneNumber',
@@ -94,7 +96,8 @@ export class ScheduleRepository {
         's.duration',
         's.name',
         'u.email',
-        'a.status',
+        'as.name as status',
+        'pm.name as paymentMethod',
       ])
       .where('a.barberId', '=', employeeId)
       .where('a.startTime', '>=', startDateWithHour)
@@ -106,7 +109,7 @@ export class ScheduleRepository {
       .updateTable('appointments')
       .set({
         paymentMethod: data.methodPayment,
-        status: 'finish',
+        statusId: 3 as any,
       })
       .where('appointments.id', '=', data.appointmentId)
       .execute();
@@ -117,11 +120,21 @@ export class ScheduleRepository {
       .insertInto('payments')
       .values({
         appointmentId: data.appointmentId,
-        paymentMethod: data.methodPayment,
         paymentDate: data.paymentDate,
         amount: data.amount,
-        paymentStatus: data.paymentStatus,
+        paymentStatusId: data.paymentStatus,
       })
+      .execute();
+  }
+
+  async updatedPaymentToFinish(paymentId: any) {
+    await this.db
+      .updateTable('payments')
+      .set({
+        paymentStatusId: 2 as any,
+        updatedAt: new Date(),
+      })
+      .where('id', '=', paymentId)
       .execute();
   }
 
@@ -138,7 +151,7 @@ export class ScheduleRepository {
       .selectFrom('appointments')
       .innerJoin('services', 'services.id', 'appointments.serviceId')
       .where('userId', '=', userId)
-      .where('status', '=', 'schedule')
+      .where('statusId', '=', 1 as any)
       .selectAll()
       .execute();
   }

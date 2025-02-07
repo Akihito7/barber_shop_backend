@@ -4,7 +4,7 @@ export class IGetAppointmentByClientId {
   barberId: number;
   startTime: Date;
   endTime: Date;
-  status: string;
+  statusId : any;
   createdAt: Date;
   updatedAt: Date;
   serviceId: number;

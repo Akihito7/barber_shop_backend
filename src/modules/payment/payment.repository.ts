@@ -9,12 +9,23 @@ export class PaymentRepository {
   ) {}
 
   async createPayment(data: any) {
-    await this.db.insertInto("payments").values({
-      appointmentId : data.appointmentId,
-      amount : data.amount,
-      paymentDate : data.paymentDate,
-      paymentMethod : data.paymentMethod,
-      paymentStatus : data.paymentStatus,
-    }).execute()
+    await this.db
+      .insertInto('payments')
+      .values({
+        appointmentId: data.appointmentId,
+        amount: data.amount,
+        paymentDate: data.paymentDate,
+        paymentStatusId: data.paymentStatusId,
+        paymentMethodsId: data.paymentMethodsId,
+      })
+      .execute();
+  }
+
+  async getPaymentByAppointmentId(appointmentId : any) {
+    return this.db
+      .selectFrom('payments')
+      .where('appointmentId', '=', appointmentId)
+      .selectAll()
+      .executeTakeFirst();
   }
 }

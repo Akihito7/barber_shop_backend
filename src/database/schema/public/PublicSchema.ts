@@ -5,6 +5,9 @@ import type { default as BarbershopTable } from './Barbershop';
 import type { default as UsersTable } from './Users';
 import type { default as AppointmentsTable } from './Appointments';
 import type { default as PaymentsTable } from './Payments';
+import type { default as AppointmentsStatusTable } from './AppointmentsStatus';
+import type { default as PaymentsStatusTable } from './PaymentsStatus';
+import type { default as PaymentMethodsTable } from './PaymentMethods';
 import type { default as ServicesTable } from './Services';
 
 export default interface PublicSchema {
@@ -15,6 +18,12 @@ export default interface PublicSchema {
   appointments: AppointmentsTable;
 
   payments: PaymentsTable;
+
+  appointmentsStatus: AppointmentsStatusTable;
+
+  paymentsStatus: PaymentsStatusTable;
+
+  paymentMethods: PaymentMethodsTable;
 
   services: ServicesTable;
 }
