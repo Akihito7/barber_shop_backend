@@ -32,6 +32,7 @@ export class ScheduleRepository {
     const result = await this.db
       .selectFrom('appointments')
       .select([
+        'id',
         sql`start_time - INTERVAL '3 hours'`.as('startTime'),
         sql`end_time - INTERVAL '3 hours'`.as('endTime'),
         'serviceId',
@@ -138,6 +139,16 @@ export class ScheduleRepository {
       .execute();
   }
 
+  async updatedAppointmentToInProgress(appointmentId: any) {
+    await this.db
+      .updateTable('appointments')
+      .where('appointments.id', '=', appointmentId)
+      .set({
+        statusId: 2 as any,
+      })
+      .execute();
+  }
+
   async getAppointmentById(appointmentId: any) {
     return this.db
       .selectFrom('appointments')
@@ -151,7 +162,7 @@ export class ScheduleRepository {
       .selectFrom('appointments')
       .innerJoin('services', 'services.id', 'appointments.serviceId')
       .where('userId', '=', userId)
-      .where('statusId', '=', 1 as any)
+      .where('statusId', 'in', [1, 2] as any)
       .selectAll()
       .execute();
   }

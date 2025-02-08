@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ConflictException,
   Injectable,
+  Logger,
 } from '@nestjs/common';
 import { ScheduleRepository } from './schedule.repository';
 import { GetAppointmentsByDayRequestDto } from './dtos/request/get-appointments-by-day-request-dto';
@@ -15,10 +16,14 @@ import { ConfigService } from '@nestjs/config';
 import Stripe from 'stripe';
 import { PaymentService } from '../payment/payment.service';
 import { ICreateAppointmentWithStripe } from './dtos/request/create-appointment-with-stripe-dto';
+import { Cron } from '@nestjs/schedule';
+import { format, isEqual, isAfter, isBefore } from 'date-fns';
+import { UTCDate } from '@date-fns/utc';
 
 @Injectable()
 export class ScheduleService {
   private stripe: Stripe;
+  private readonly logger = new Logger(ScheduleService.name);
   constructor(
     private readonly scheduleRepository: ScheduleRepository,
     private readonly offeringsRepository: OfferingsRepository,
@@ -34,6 +39,55 @@ export class ScheduleService {
   private startHourInMinutes = 11 * 60;
   private endHourInMinutes = 21.5 * 60;
   private intervalInMinutes = 30;
+
+  @Cron('0 */10 * * * *')
+  async checkAppointmentsStatus() {
+    const barbersId = (await this.employeeRepository.getEmployees()).map(
+      (barber) => barber.id,
+    );
+    const startDateWithHour = format(
+      new Date().setHours(11, 0, 0, 0),
+      'yyyy-MM-dd HH:mm',
+    );
+    const endDateWithHour = format(
+      new Date().setHours(21, 0, 0, 0),
+      'yyyy-MM-dd HH:mm',
+    );
+
+    const currentHour = format(new Date(), 'yyyy-MM-dd HH:mm');
+
+    for (let i = 0; i < barbersId.length; i++) {
+      const appointmentByEmployee =
+        await this.scheduleRepository.getScheduleWithDetailsByEmployee({
+          employeeId: barbersId[i] as any,
+          startDateWithHour,
+          endDateWithHour,
+        });
+
+      for (let x = 0; x < appointmentByEmployee.length; x++) {
+        const hourInitialAppointment = format(
+          appointmentByEmployee[x].startTime as Date,
+          'yyyy-MM-dd HH:mm',
+        );
+        const hourEndAppointment = format(
+          appointmentByEmployee[x].endTime as Date,
+          'yyyy-MM-dd HH:mm',
+        );
+
+        if (
+          (isAfter(currentHour, hourInitialAppointment) ||
+            isEqual(currentHour, hourInitialAppointment)) &&
+          (isBefore(currentHour, hourEndAppointment) ||
+            isEqual(currentHour, hourEndAppointment)) &&
+          appointmentByEmployee[x].status != 'Finalizado'
+        ) {
+          await this.scheduleRepository.updatedAppointmentToInProgress(
+            appointmentByEmployee[x].id,
+          );
+        }
+      }
+    }
+  }
 
   async getScheduleWithAvailability({
     date,
@@ -300,12 +354,10 @@ export class ScheduleService {
       data.appointmentId,
     );
 
-    console.log(data);
-
     const { paymentStatusId, id: paymentId } =
       await this.paymentService.getPaymentByAppointmentId(data.appointmentId);
 
-    if (paymentStatusId === 2 && statusId === 1) {
+    if (paymentStatusId === 2 && (statusId === 1 || statusId === 2)) {
       await this.scheduleRepository.finishAppointment(data);
       throw new ConflictException('Serviço já foi pago.');
     }

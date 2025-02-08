@@ -47,7 +47,6 @@ export class ScheduleController {
   async createAppointmentWithStripe(
     @Body() body: ICreateAppointmentWithStripe,
   ) {
-    console.log(body);
     return this.scheduleService.createAppointmentWithStripe(body);
   }
 
@@ -63,4 +62,5 @@ export class ScheduleController {
   ): Promise<IGetAppointmentByClientId[]> {
     return this.scheduleService.getAppointmentByClient(req.user.id);
   }
+
 }

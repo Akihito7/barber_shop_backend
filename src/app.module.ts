@@ -9,6 +9,7 @@ import { OfferingsModule } from './modules/offerings/offerings.module';
 import { EmployeeModule } from './modules/employee/employee.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ManagementBarberShopModule } from './modules/management-barber-shop/management-barber-shop.module';
+import { ScheduleModule as ScheduleModuleNestjs } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ManagementBarberShopModule } from './modules/management-barber-shop/man
     EmployeeModule,
     DashboardModule,
     ManagementBarberShopModule,
+    ScheduleModuleNestjs.forRoot()
   ],
   controllers: [AppController],
   providers: [AppService],
