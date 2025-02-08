@@ -15,7 +15,7 @@ export class DashboardRepository {
       .select(({ fn }) => [fn.sum('s.price').as('dailyRevenue')])
       .where('a.startTime', '>=', formattedInitialDate)
       .where('a.endTime', '<=', formmatedEndDate)
-      .where('a.statusId', '=', 4 as any)
+      .where('a.statusId', '=', 3 as any)
       .executeTakeFirst();
 
     if (result.dailyRevenue === null) {
@@ -33,7 +33,7 @@ export class DashboardRepository {
       .select(({ fn }) => [fn.sum('s.price').as('weeklyRevenue')])
       .where('a.startTime', '>=', formattedInitialDate)
       .where('a.endTime', '<=', formmatedEndDate)
-      .where('a.statusId', '=', 4 as any)
+      .where('a.statusId', '=', 3 as any)
       .executeTakeFirst();
 
     if (result.weeklyRevenue === null) {
@@ -51,7 +51,7 @@ export class DashboardRepository {
       .select(({ fn }) => [fn.sum('s.price').as('monthlyRevenue')])
       .where('a.startTime', '>=', formattedInitialDate)
       .where('a.endTime', '<=', formmatedEndDate)
-      .where('a.statusId', '=', 4 as any)
+      .where('a.statusId', '=', 3 as any)
       .executeTakeFirst();
 
     if (result.monthlyRevenue === null) {

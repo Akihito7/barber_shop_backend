@@ -57,13 +57,13 @@ export class DashboardService {
 
   private getFirstDayOfMonth(dateString: string) {
     const date = new Date(dateString);
-    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+    const firstDay = new Date(date.getFullYear(), date.getUTCMonth(), 1);
     return firstDay;
   }
 
   private getLastDayOfMonth(dateString: string) {
     const date = new Date(dateString);
-    const nextMonth = new Date(date.getFullYear(), date.getMonth() + 1, 1);
+    const nextMonth = new Date(date.getFullYear(), date.getUTCMonth() + 1, 1);
     nextMonth.setDate(nextMonth.getDate() - 1);
     return nextMonth;
   }

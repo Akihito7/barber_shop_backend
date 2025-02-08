@@ -202,6 +202,12 @@ export class ScheduleService {
       if (isConsecutive) {
         consecutiveFreeHours.push(freeHours[i]);
       }
+      if (
+        freeHours.includes('21:00') &&
+        !consecutiveFreeHours.includes('21:00')
+      ) {
+        consecutiveFreeHours.push('21:00');
+      }
     }
     return {
       employeeUsername,
