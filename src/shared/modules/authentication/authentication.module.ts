@@ -4,6 +4,7 @@ import { AuthenticationService } from './authentication.service';
 import { AuthenticationRepository } from './authentication.repository';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { NotificationModule } from '../notifications/notification.module';
 
 @Global()
 @Module({
@@ -16,6 +17,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
         secret: configService.get<string>('JWT_SECRET'),
       }),
     }),
+    NotificationModule
   ],
   controllers: [AuthenticationController],
   providers: [AuthenticationService, AuthenticationRepository],

@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   UnauthorizedException,
@@ -9,12 +10,16 @@ import { compare, hash } from 'bcrypt';
 import { SignlnRequestDto } from './dtos/request/signln-request.dto';
 import { JwtService } from '@nestjs/jwt';
 import { SignlnResponseDto } from './dtos/response/signln-response-dto';
+import { NotificationService } from '../notifications/notification.service';
+import { ICreateCodeEmailValidation } from './dtos/request/create-code-email-validation.dto';
+import { IResendCodeEmail } from './dtos/request/resend-code-email.dto';
 
 @Injectable()
 export class AuthenticationService {
   constructor(
     private readonly authenticationRepository: AuthenticationRepository,
     private readonly jwtService: JwtService,
+    private readonly notication: NotificationService,
   ) {}
 
   async signup(data: SignupRequestDto) {
@@ -23,18 +28,35 @@ export class AuthenticationService {
         username: data.username,
       });
 
-    if (usernameExists) throw new ConflictException('Username already exists.');
+    if (usernameExists && usernameExists.isAccountActive === false) {
+      await this.authenticationRepository.deleteUser(usernameExists.id);
+    }
+
+    if (usernameExists && usernameExists.isAccountActive === true)
+      throw new ConflictException('Username already exists.');
 
     const emailExists = await this.authenticationRepository.getUserByEmail({
       email: data.email,
     });
 
-    if (emailExists) throw new ConflictException('Email already exists.');
+    if (emailExists && emailExists.isAccountActive === false) {
+      await this.authenticationRepository.deleteUser(emailExists.id);
+    }
+
+    if (emailExists && emailExists.isAccountActive === true)
+      throw new ConflictException('Email already exists.');
 
     const passwordHashed = await hash(data.password, 8);
     data.password = passwordHashed;
 
     await this.authenticationRepository.createUser(data);
+
+    const code = this.generateEmailCodeValidation();
+    await this.notication.createEmailCodeVerification({
+      email: data.email,
+      code,
+    });
+    await this.notication.sendEmailVerification({ code, email: data.email });
   }
 
   async signln(data: SignlnRequestDto): Promise<SignlnResponseDto> {
@@ -80,5 +102,41 @@ export class AuthenticationService {
         isValidToken: false,
       };
     }
+  }
+
+  generateEmailCodeValidation(): string {
+    const code = Math.floor(100000 + Math.random() * 900000)
+      .toString()
+      .padStart(6, '0');
+    return code;
+  }
+
+  async accountActivation({ email, code }) {
+    const hasCode =
+      await this.authenticationRepository.getCodeEmailVerification({
+        email,
+        code,
+      });
+
+    if (!hasCode) {
+      throw new BadRequestException('Código expirado ou inválido.');
+    }
+    const currentDate = new Date();
+    if (currentDate > hasCode.expirationAt) {
+      await this.authenticationRepository.deleteCodeEmailVerification(code);
+      throw new BadRequestException('Código expirado ou inválido.');
+    }
+
+    await this.authenticationRepository.accountActivation(email);
+    await this.authenticationRepository.deleteCodeEmailVerification(code);
+  }
+
+  async resendCodeEmail({ email }: IResendCodeEmail) {
+    const code = this.generateEmailCodeValidation();
+    await this.notication.createEmailCodeVerification({
+      email,
+      code,
+    });
+    await this.notication.sendEmailVerification({ code, email });
   }
 }

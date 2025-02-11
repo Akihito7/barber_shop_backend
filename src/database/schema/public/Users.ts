@@ -10,8 +10,6 @@ export type UsersId = number & { __brand: 'UsersId' };
 export default interface UsersTable {
   id: ColumnType<UsersId, UsersId | undefined, UsersId>;
 
-  username: ColumnType<string, string, string>;
-
   email: ColumnType<string, string, string>;
 
   password: ColumnType<string, string, string>;
@@ -35,6 +33,12 @@ export default interface UsersTable {
   isActive: ColumnType<boolean | null, boolean | null, boolean | null>;
 
   roles: ColumnType<string[] | null, string[] | null, string[] | null>;
+
+  name: ColumnType<string, string | undefined, string>;
+
+  isAccountActive: ColumnType<boolean, boolean | undefined, boolean>;
+
+  username: ColumnType<string, string | undefined, string>;
 }
 
 export type Users = Selectable<UsersTable>;

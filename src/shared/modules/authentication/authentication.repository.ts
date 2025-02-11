@@ -47,11 +47,42 @@ export class AuthenticationRepository {
           role,
           phoneNumber,
           cpf: cpf ?? null,
+          isAccountActive: false,
         })
         .execute();
     } catch (error) {
       console.error('Error creating user in AuthenticationRepository: ', error);
       throw new Error('Failed to create user.');
     }
+  }
+
+  async deleteUser(userId: any) {
+    await this.db.deleteFrom('users').where('id', '=', userId).execute();
+  }
+
+  async getCodeEmailVerification({ email, code }: any) {
+    return this.db
+      .selectFrom('emailVerifications')
+      .where('email', '=', email)
+      .where('code', '=', code)
+      .selectAll()
+      .executeTakeFirst();
+  }
+
+  async deleteCodeEmailVerification(code: any) {
+    await this.db
+      .deleteFrom('emailVerifications')
+      .where('code', '=', code)
+      .execute();
+  }
+
+  async accountActivation(email: any) {
+    await this.db
+      .updateTable('users')
+      .set({
+        isAccountActive: true,
+      })
+      .where('email', '=', email)
+      .execute();
   }
 }

@@ -9,6 +9,7 @@ import type { default as AppointmentsStatusTable } from './AppointmentsStatus';
 import type { default as PaymentsStatusTable } from './PaymentsStatus';
 import type { default as PaymentMethodsTable } from './PaymentMethods';
 import type { default as ServicesTable } from './Services';
+import type { default as EmailVerificationsTable } from './EmailVerifications';
 
 export default interface PublicSchema {
   barbershop: BarbershopTable;
@@ -26,4 +27,6 @@ export default interface PublicSchema {
   paymentMethods: PaymentMethodsTable;
 
   services: ServicesTable;
+
+  emailVerifications: EmailVerificationsTable;
 }

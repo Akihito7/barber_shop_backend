@@ -33,10 +33,53 @@ export class DashboardService {
     const formmatedEndDate =
       this.getLastDayOfMonth(dateString).toISOString().split('T')[0] +
       ' 23:59:59';
-    return this.dashboardRepository.getMonthlyRevenue({
+
+    const [year, month, day] = dateString.split('-');
+    const newMonth = String(
+      Number(month) - 1 === 0 ? '12' : Number(month) - 1,
+    ).padStart(2, '0');
+    const oneMonthBefore = `${year}-${newMonth}-${day}`;
+
+    const formattedInitialDatePreviousMonth =
+      this.getFirstDayOfMonth(oneMonthBefore).toISOString().split('T')[0] +
+      ' 00:00:00';
+
+    const formattedEndDatePreviousMonth =
+      this.getLastDayOfMonth(oneMonthBefore).toISOString().split('T')[0] +
+      ' 23:59:59';
+
+    const currentMonth = await this.dashboardRepository.getMonthlyRevenue({
       formattedInitialDate,
       formmatedEndDate,
     });
+
+    const previousMonth = await this.dashboardRepository.getMonthlyRevenue({
+      formattedInitialDate: formattedInitialDatePreviousMonth,
+      formmatedEndDate: formattedEndDatePreviousMonth,
+    });
+
+    let percentageChange: string | number = 0;
+    if (Number(previousMonth.monthlyRevenue) > 0) {
+      percentageChange = Number(
+        (
+          ((Number(currentMonth.monthlyRevenue) -
+            Number(previousMonth.monthlyRevenue)) *
+            100) /
+          Number(previousMonth.monthlyRevenue)
+        ).toFixed(2),
+      );
+    } else if (
+      Number(previousMonth.monthlyRevenue) === 0 &&
+      Number(currentMonth.monthlyRevenue) > 0
+    ) {
+      percentageChange = Number(currentMonth.monthlyRevenue).toFixed(2); 
+    } else if (
+      Number(previousMonth.monthlyRevenue) === 0 &&
+      Number(currentMonth.monthlyRevenue) === 0
+    ) {
+      percentageChange = 0;
+    }
+    return currentMonth;
   }
 
   private getMonday(dateString: string) {
