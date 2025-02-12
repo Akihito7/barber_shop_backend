@@ -5,25 +5,117 @@ import { DashboardRepository } from './dashboard.repository';
 export class DashboardService {
   constructor(private readonly dashboardRepository: DashboardRepository) {}
   async getDailyRevenue(date: string) {
+    const previousDate = new Date(date);
+    previousDate.setDate(previousDate.getDate() - 1);
     const formattedInitialDate = date + ' 00:00:00';
     const formmatedEndDate = date + ' 23:59:59';
-    return this.dashboardRepository.getDailyRevenue({
+
+    const previousFormattedInitialDate =
+      previousDate.toISOString().split('T')[0] + ' 00:00:00';
+    const previousFormattedEndDate =
+      previousDate.toISOString().split('T')[0] + ' 23:59:59';
+    const currentDay = await this.dashboardRepository.getDailyRevenue({
       formattedInitialDate,
       formmatedEndDate,
     });
+
+    const previousDay = await this.dashboardRepository.getDailyRevenue({
+      formattedInitialDate: previousFormattedInitialDate,
+      formmatedEndDate: previousFormattedEndDate,
+    });
+
+    let percentageChange: string | number = 0;
+    if (Number(previousDay.dailyRevenue) > 0) {
+      percentageChange = Number(
+        (
+          ((Number(currentDay.dailyRevenue) -
+            Number(previousDay.dailyRevenue)) *
+            100) /
+          Number(previousDay.dailyRevenue)
+        ).toFixed(2),
+      );
+    } else if (
+      Number(previousDay.dailyRevenue) === 0 &&
+      Number(currentDay.dailyRevenue) > 0
+    ) {
+      percentageChange = Number(currentDay.dailyRevenue).toFixed(2);
+    } else if (
+      Number(previousDay.dailyRevenue) === 0 &&
+      Number(currentDay.dailyRevenue) === 0
+    ) {
+      percentageChange = 0;
+    }
+    const formattedPercentageChange =
+      Number(percentageChange) === 0 || String(percentageChange).includes('-')
+        ? percentageChange
+        : `+${percentageChange}`;
+
+    return {
+      dailyRevenue: currentDay.dailyRevenue,
+      percentageChange: formattedPercentageChange,
+    };
   }
 
   async getWeeklyRevenue(dateString: string) {
-    const monday = this.getMonday(dateString).toISOString().split('T')[0];
-    const nextSunday = this.getNextSunday(dateString)
+    const previousWeek = new Date(dateString);
+    previousWeek.setDate(previousWeek.getDate() - 7);
+    const currentMonday = this.getMonday(dateString)
       .toISOString()
       .split('T')[0];
-    const formattedInitialDate = monday + ' 00:00:00';
-    const formmatedEndDate = nextSunday + ' 23:59:59';
-    return this.dashboardRepository.getWeeklyRevenue({
-      formattedInitialDate,
-      formmatedEndDate,
-    });
+    const currentNextSunday = this.getNextSunday(dateString)
+      .toISOString()
+      .split('T')[0];
+    const formattedInitialDate = currentMonday + ' 00:00:00';
+    const formmatedEndDate = currentNextSunday + ' 23:59:59';
+    const currentWeeklyRevenue =
+      await this.dashboardRepository.getWeeklyRevenue({
+        formattedInitialDate,
+        formmatedEndDate,
+      });
+    const previousMonday = this.getMonday(previousWeek.toISOString())
+      .toISOString()
+      .split('T')[0];
+    const previousNextSunday = this.getNextSunday(previousWeek.toISOString())
+      .toISOString()
+      .split('T')[0];
+    const previousFormattedInitialDate = previousMonday + ' 00:00:00';
+    const previousFormattedEndDate = previousNextSunday + ' 23:59:59';
+    const previousWeeklyRevenue =
+      await this.dashboardRepository.getWeeklyRevenue({
+        formattedInitialDate: previousFormattedInitialDate,
+        formmatedEndDate: previousFormattedEndDate,
+      });
+
+    let percentageChange: string | number = 0;
+    if (Number(previousWeeklyRevenue.weeklyRevenue) > 0) {
+      percentageChange = Number(
+        (
+          ((Number(currentWeeklyRevenue.weeklyRevenue) -
+            Number(previousWeeklyRevenue.weeklyRevenue)) *
+            100) /
+          Number(previousWeeklyRevenue.weeklyRevenue)
+        ).toFixed(2),
+      );
+    } else if (
+      Number(previousWeeklyRevenue.weeklyRevenue) === 0 &&
+      Number(currentWeeklyRevenue.weeklyRevenue) > 0
+    ) {
+      percentageChange = Number(currentWeeklyRevenue.weeklyRevenue).toFixed(2);
+    } else if (
+      Number(previousWeeklyRevenue.weeklyRevenue) === 0 &&
+      Number(currentWeeklyRevenue.weeklyRevenue) === 0
+    ) {
+      percentageChange = 0;
+    }
+    const formattedPercentageChange =
+      Number(percentageChange) === 0 || String(percentageChange).includes('-')
+        ? percentageChange
+        : `+${percentageChange}`;
+
+    return {
+      weeklyRevenue: currentWeeklyRevenue.weeklyRevenue,
+      percentageChange: formattedPercentageChange,
+    };
   }
 
   async getMonthlyRevenue(dateString: string) {
@@ -72,14 +164,21 @@ export class DashboardService {
       Number(previousMonth.monthlyRevenue) === 0 &&
       Number(currentMonth.monthlyRevenue) > 0
     ) {
-      percentageChange = Number(currentMonth.monthlyRevenue).toFixed(2); 
+      percentageChange = Number(currentMonth.monthlyRevenue).toFixed(2);
     } else if (
       Number(previousMonth.monthlyRevenue) === 0 &&
       Number(currentMonth.monthlyRevenue) === 0
     ) {
       percentageChange = 0;
     }
-    return currentMonth;
+    const formattedPercentageChange =
+      Number(percentageChange) === 0 || String(percentageChange).includes('-')
+        ? percentageChange
+        : `+${percentageChange}`;
+    return {
+      monthlyRevenue: currentMonth.monthlyRevenue,
+      percentageChange: String(formattedPercentageChange),
+    };
   }
 
   private getMonday(dateString: string) {
