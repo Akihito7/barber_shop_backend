@@ -23,4 +23,8 @@ export class OfferingsRepository {
   async createService(data: any): Promise<void> {
     await this.db.insertInto('services').values(data).execute();
   }
+
+  async deleteService({ serviceId }: { serviceId: any }): Promise<void> {
+    await this.db.deleteFrom('services').where('id', '=', serviceId).executeTakeFirst();
+  }
 }

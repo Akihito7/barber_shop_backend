@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { OfferingsService } from './offerings.service';
 import { GetServicesResposeDto } from './dtos/response/get-services-response-dto';
 import { AuthGuard } from 'src/guards/auth.guard';
@@ -50,5 +61,11 @@ export class OfferingsController {
     } catch (error) {
       throw new Error(error.message);
     }
+  }
+
+  @Delete('delete/:id')
+  @HttpCode(204)
+  async deleteService(@Param('id') serviceId): Promise<void> {
+    return this.offeringsService.deleteService({ serviceId });
   }
 }

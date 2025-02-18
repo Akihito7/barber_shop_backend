@@ -28,4 +28,8 @@ export class OfferingsService {
       duration,
     });
   }
+
+  async deleteService({ serviceId }: { serviceId: any }): Promise<void> {
+    await this.offeringsRepository.deleteService({ serviceId });
+  }
 }
