@@ -1,6 +1,8 @@
 import { ConflictException, Injectable } from '@nestjs/common';
 import { EmployeeRepository } from './employee.repository';
 import { ICreateEmployee } from './dtos/request/create-employee-dto';
+import { IUpdateEmployee } from './dtos/request/update-employee-dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class EmployeeService {
@@ -42,5 +44,19 @@ export class EmployeeService {
       role,
       roles,
     });
+  }
+
+  async updateEmployee(data: IUpdateEmployee) {
+    const user = await this.employeeRepository.getUser(data.id);
+    const isSamePassowrd = data.password === user.password;
+    if (!isSamePassowrd) {
+      const updatePasswordHash = await bcrypt.hash(data.password, 8);
+      data.password = updatePasswordHash;
+    }
+    await this.employeeRepository.upatedEmployee(data);
+  }
+
+  async deleteEmployee(employeeId: number) {
+    return this.employeeRepository.deleteEmployee(employeeId);
   }
 }

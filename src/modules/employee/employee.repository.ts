@@ -64,5 +64,22 @@ export class EmployeeRepository {
       .values({ username, email, password, phoneNumber, role, roles })
       .execute();
   }
+
+  async upatedEmployee(data: any) {
+    await this.db
+      .updateTable('users')
+      .set({
+        username: data.username,
+        email: data.email,
+        password: data.password,
+        phoneNumber: data.phoneNumber,
+      })
+      .where('id', '=', data.id)
+      .execute();
+  }
+
+  async deleteEmployee(employeeId: any) {
+    await this.db.deleteFrom('users').where('id', '=', employeeId).execute();
+  }
   //remover pro modulo users quando criado
 }

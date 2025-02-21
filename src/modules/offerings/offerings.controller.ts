@@ -4,10 +4,9 @@ import {
   Delete,
   Get,
   HttpCode,
-  HttpStatus,
   Param,
   Post,
-  Req,
+  Put,
   UseGuards,
 } from '@nestjs/common';
 import { OfferingsService } from './offerings.service';
@@ -18,6 +17,7 @@ import { RolesGuard } from 'src/guards/roles.guard';
 import { Roles } from 'src/decorators/roles-decorator';
 import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
+import { UpdateServiceDto } from './dtos/request/update-service.dto';
 
 @Controller('offerings')
 @UseGuards(AuthGuard)
@@ -61,6 +61,14 @@ export class OfferingsController {
     } catch (error) {
       throw new Error(error.message);
     }
+  }
+
+  @Put('update/:id')
+  async updatedService(@Param('id') serviceId, @Body() body: UpdateServiceDto) {
+    return this.offeringsService.updateService({
+      serviceId,
+      data: body,
+    });
   }
 
   @Delete('delete/:id')

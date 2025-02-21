@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { OfferingsRepository } from './offerings.repository';
 import { GetServicesResposeDto } from './dtos/response/get-services-response-dto';
 import { CreateServiceDto } from './dtos/request/create-service-dto';
+import { UpdateServiceDto } from './dtos/request/update-service.dto';
 
 @Injectable()
 export class OfferingsService {
@@ -26,6 +27,19 @@ export class OfferingsService {
       price,
       description,
       duration,
+    });
+  }
+
+  async updateService({
+    serviceId,
+    data,
+  }: {
+    serviceId: string;
+    data: UpdateServiceDto;
+  }) {
+    return this.offeringsRepository.updateService({
+      serviceId,
+      data,
     });
   }
 

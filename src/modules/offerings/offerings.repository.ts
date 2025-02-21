@@ -24,7 +24,23 @@ export class OfferingsRepository {
     await this.db.insertInto('services').values(data).execute();
   }
 
+  async updateService({ serviceId, data }) {
+    await this.db
+      .updateTable('services')
+      .set({
+        name: data.name,
+        price: data.price,
+        description: data.description,
+        duration: data.duration,
+      })
+      .where('id', '=', serviceId)
+      .executeTakeFirst();
+  }
+
   async deleteService({ serviceId }: { serviceId: any }): Promise<void> {
-    await this.db.deleteFrom('services').where('id', '=', serviceId).executeTakeFirst();
+    await this.db
+      .deleteFrom('services')
+      .where('id', '=', serviceId)
+      .executeTakeFirst();
   }
 }
