@@ -50,7 +50,7 @@ export class PaymentService {
     return this.paymentRepository.createPayment(data);
   }
 
-  async getPaymentByAppointmentId(appointmentId : any){
+  async getPaymentByAppointmentId(appointmentId : number){
     return this.paymentRepository.getPaymentByAppointmentId(appointmentId)
   }
 }

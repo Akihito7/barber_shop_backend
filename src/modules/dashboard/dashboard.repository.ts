@@ -1,6 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Kysely, sql } from 'kysely';
 import Database from 'src/database/schema/Database';
+import { IDates } from './dtos/dates.dto';
+import { PaymentsStatusId } from 'src/database/schema/public/PaymentsStatus';
+import {
+  AppointmentsStatus,
+  AppointmentsStatusId,
+} from 'src/database/schema/public/AppointmentsStatus';
 
 @Injectable()
 export class DashboardRepository {
@@ -8,14 +14,14 @@ export class DashboardRepository {
     @Inject('DATABASE_CONNECTION') private readonly db: Kysely<Database>,
   ) {}
 
-  async getDailyRevenue({ formattedInitialDate, formmatedEndDate }: any) {
+  async getDailyRevenue({ formattedInitialDate, formmatedEndDate }: IDates) {
     const result = await this.db
       .selectFrom('appointments as a')
       .innerJoin('services as s', 's.id', 'a.serviceId')
       .select(({ fn }) => [fn.sum('s.price').as('dailyRevenue')])
       .where('a.startTime', '>=', formattedInitialDate)
       .where('a.endTime', '<=', formmatedEndDate)
-      .where('a.statusId', '=', 3 as any)
+      .where('a.statusId', '=', 3 as AppointmentsStatusId)
       .executeTakeFirst();
 
     if (result.dailyRevenue === null) {
@@ -26,14 +32,14 @@ export class DashboardRepository {
     return result;
   }
 
-  async getWeeklyRevenue({ formattedInitialDate, formmatedEndDate }: any) {
+  async getWeeklyRevenue({ formattedInitialDate, formmatedEndDate }: IDates) {
     const result = await this.db
       .selectFrom('appointments as a')
       .innerJoin('services as s', 's.id', 'a.serviceId')
       .select(({ fn }) => [fn.sum('s.price').as('weeklyRevenue')])
       .where('a.startTime', '>=', formattedInitialDate)
       .where('a.endTime', '<=', formmatedEndDate)
-      .where('a.statusId', '=', 3 as any)
+      .where('a.statusId', '=', 3 as AppointmentsStatusId)
       .executeTakeFirst();
 
     if (result.weeklyRevenue === null) {
@@ -44,14 +50,14 @@ export class DashboardRepository {
     return result;
   }
 
-  async getMonthlyRevenue({ formattedInitialDate, formmatedEndDate }: any) {
+  async getMonthlyRevenue({ formattedInitialDate, formmatedEndDate }: IDates) {
     const result = await this.db
       .selectFrom('appointments as a')
       .innerJoin('services as s', 's.id', 'a.serviceId')
       .select(({ fn }) => [fn.sum('s.price').as('monthlyRevenue')])
       .where('a.startTime', '>=', formattedInitialDate)
       .where('a.endTime', '<=', formmatedEndDate)
-      .where('a.statusId', '=', 3 as any)
+      .where('a.statusId', '=', 3 as AppointmentsStatusId)
       .executeTakeFirst();
 
     if (result.monthlyRevenue === null) {
@@ -62,7 +68,10 @@ export class DashboardRepository {
     return result;
   }
 
-  async getTopSellingServices({ formattedInitialDate, formmatedEndDate }: any) {
+  async getTopSellingServices({
+    formattedInitialDate,
+    formmatedEndDate,
+  }: IDates) {
     return this.db
       .selectFrom('appointments as a')
       .innerJoin('services as s', 's.id', 'a.serviceId')
@@ -77,7 +86,10 @@ export class DashboardRepository {
       .execute();
   }
 
-  async getRevenueBySemester({ formattedInitialDate, formmatedEndDate }: any) {
+  async getRevenueBySemester({
+    formattedInitialDate,
+    formmatedEndDate,
+  }: IDates) {
     return this.db
       .selectFrom('appointments as a')
       .innerJoin('services as s', 's.id', 'a.serviceId')

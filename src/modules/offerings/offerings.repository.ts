@@ -43,4 +43,18 @@ export class OfferingsRepository {
       .where('id', '=', serviceId)
       .executeTakeFirst();
   }
+
+  async updateBarberShop(data: any): Promise<void> {
+    await this.db
+      .updateTable('barbershop')
+      .set({
+        name: data.name,
+        address: data.address,
+        phone: data.phone,
+        openingHours: data.openingHours,
+        closingHours: data.closingHours,
+      })
+      .where('id', '=', 1 as any)
+      .execute();
+  }
 }

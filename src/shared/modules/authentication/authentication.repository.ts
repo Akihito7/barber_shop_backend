@@ -85,4 +85,39 @@ export class AuthenticationRepository {
       .where('email', '=', email)
       .execute();
   }
+
+  async saveCodeChangePassword({ email, code }: any) {
+    await this.db
+      .insertInto('passwordReset')
+      .values({
+        email,
+        code,
+      })
+      .execute();
+  }
+
+  async getCodeChangePassword(code: any) {
+    return this.db
+      .selectFrom('passwordReset')
+      .selectAll()
+      .where('code', '=', code)
+      .executeTakeFirst();
+  }
+
+  async resetPassword({ email, password }: any) {
+    await this.db
+      .updateTable('users')
+      .set({
+        password,
+      })
+      .where('email', '=', email)
+      .execute();
+  }
+
+  async deleteCodeChangePassword(code: string) {
+    await this.db
+      .deleteFrom('passwordReset')
+      .where('code', '=', code)
+      .execute();
+  }
 }

@@ -18,9 +18,9 @@ import { Roles } from 'src/decorators/roles-decorator';
 import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
 import { UpdateServiceDto } from './dtos/request/update-service.dto';
+import { IUpdateBarberShop } from './dtos/request/update-barber-dto';
 
 @Controller('offerings')
-@UseGuards(AuthGuard)
 export class OfferingsController {
   private stripe: Stripe;
   constructor(
@@ -76,4 +76,11 @@ export class OfferingsController {
   async deleteService(@Param('id') serviceId): Promise<void> {
     return this.offeringsService.deleteService({ serviceId });
   }
+
+  @Put('barber-shop/update')
+  @HttpCode(204)
+  async updateBarberShop(@Body() body: IUpdateBarberShop) {
+    return this.offeringsService.updateBarberShop(body);
+  }
+  //mudar para o module barber
 }

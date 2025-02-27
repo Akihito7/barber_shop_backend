@@ -1,10 +1,8 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import { AuthGuard } from 'src/guards/auth.guard';
 import { DashboardService } from './dashboard.service';
-import { query } from 'express';
 
 @Controller('dashboard')
-@UseGuards(AuthGuard)
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
   @Get('daily-revenue')

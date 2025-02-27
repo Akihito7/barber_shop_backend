@@ -16,6 +16,11 @@ interface ISendEmailVerification {
   code: string;
 }
 
+interface ISendEmailToChangePassword {
+  email: string;
+  code: string;
+}
+
 interface ICreateEmailCodeVerification {
   code: string;
   email: string;
@@ -44,6 +49,18 @@ export class NotificationService {
       to: email,
       html: this.generateHtmlEmail(code, callbackUrl),
       subject: 'Ativação de Conta',
+    });
+  }
+
+  async sendEmailToChangePassword({ email, code }: ISendEmailToChangePassword) {
+    const callbackUrl = `http://localhost:3001/reset-password?email=${email}`;
+    await this.sendEmail({
+      to: email,
+      subject: 'Mudanca de senha',
+      html: `
+      <h1>seu codigo : ${code} </h1>
+     <span>Link pra trocar de senha : ${callbackUrl} </span>
+      `,
     });
   }
 

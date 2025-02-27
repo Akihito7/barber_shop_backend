@@ -3,6 +3,7 @@ import { OfferingsRepository } from './offerings.repository';
 import { GetServicesResposeDto } from './dtos/response/get-services-response-dto';
 import { CreateServiceDto } from './dtos/request/create-service-dto';
 import { UpdateServiceDto } from './dtos/request/update-service.dto';
+import { IUpdateBarberShop } from './dtos/request/update-barber-dto';
 
 @Injectable()
 export class OfferingsService {
@@ -45,5 +46,9 @@ export class OfferingsService {
 
   async deleteService({ serviceId }: { serviceId: any }): Promise<void> {
     await this.offeringsRepository.deleteService({ serviceId });
+  }
+
+  async updateBarberShop(data: IUpdateBarberShop): Promise<void> {
+    await this.offeringsRepository.updateBarberShop(data);
   }
 }

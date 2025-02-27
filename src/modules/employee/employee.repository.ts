@@ -1,6 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Kysely, sql } from 'kysely';
 import Database from 'src/database/schema/Database';
+import { convertNumberToUserId } from 'src/utils/convert-number-to-user-id';
+import { IUpdateEmployee } from './dtos/request/update-employee-dto';
 
 @Injectable()
 export class EmployeeRepository {
@@ -19,15 +21,15 @@ export class EmployeeRepository {
       .execute();
   }
 
-  async getUser(id: any) {
+  async getUser(userId: number) {
     return this.db
       .selectFrom('users')
       .selectAll()
-      .where('id', '=', id)
+      .where('id', '=', convertNumberToUserId(userId))
       .executeTakeFirst();
   }
 
-  async getUserByEmail(email: any) {
+  async getUserByEmail(email: string) {
     return this.db
       .selectFrom('users')
       .selectAll()
@@ -35,7 +37,7 @@ export class EmployeeRepository {
       .executeTakeFirst();
   }
 
-  async getUserByUsername(username: any) {
+  async getUserByUsername(username: string) {
     return this.db
       .selectFrom('users')
       .selectAll()
@@ -43,7 +45,7 @@ export class EmployeeRepository {
       .executeTakeFirst();
   }
 
-  async getUserByPhoneNumber(phoneNumber: any) {
+  async getUserByPhoneNumber(phoneNumber: string) {
     return this.db
       .selectFrom('users')
       .selectAll()
@@ -65,21 +67,24 @@ export class EmployeeRepository {
       .execute();
   }
 
-  async upatedEmployee(data: any) {
+  async upatedEmployee(data: IUpdateEmployee) {
     await this.db
       .updateTable('users')
       .set({
         username: data.username,
         email: data.email,
         password: data.password,
-        phoneNumber: data.phoneNumber,
+        phoneNumber: data.phoneNumber.toString(),
       })
-      .where('id', '=', data.id)
+      .where('id', '=', convertNumberToUserId(data.id))
       .execute();
   }
 
-  async deleteEmployee(employeeId: any) {
-    await this.db.deleteFrom('users').where('id', '=', employeeId).execute();
+  async deleteEmployee(employeeId: number) {
+    await this.db
+      .deleteFrom('users')
+      .where('id', '=', convertNumberToUserId(employeeId))
+      .execute();
   }
   //remover pro modulo users quando criado
 }

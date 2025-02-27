@@ -5,6 +5,10 @@ import {
   GetAppointmentsByDayRepository,
   GetAppointmentsByEmployeeRepository,
 } from './types/schedule-types';
+import { convertNumberToUserId } from 'src/utils/convert-number-to-user-id';
+import { AppointmentsId } from 'src/database/schema/public/Appointments';
+import { PaymentsId } from 'src/database/schema/public/Payments';
+import { FinishAppointment } from './dtos/request/finishe-appointment-dto';
 
 @Injectable()
 export class ScheduleRepository {
@@ -105,14 +109,14 @@ export class ScheduleRepository {
       .where('a.endTime', '<=', endDateWithHour)
       .execute();
   }
-  async finishAppointment(data: any) {
+  async finishAppointment(data: FinishAppointment) {
     return this.db
       .updateTable('appointments')
       .set({
         paymentMethod: data.methodPayment,
         statusId: 3 as any,
       })
-      .where('appointments.id', '=', data.appointmentId)
+      .where('appointments.id', '=', data.appointmentId as AppointmentsId)
       .execute();
   }
 
@@ -128,40 +132,40 @@ export class ScheduleRepository {
       .execute();
   }
 
-  async updatedPaymentToFinish(paymentId: any) {
+  async updatedPaymentToFinish(paymentId: number) {
     await this.db
       .updateTable('payments')
       .set({
         paymentStatusId: 2 as any,
         updatedAt: new Date(),
       })
-      .where('id', '=', paymentId)
+      .where('id', '=', paymentId as PaymentsId)
       .execute();
   }
 
-  async updatedAppointmentToInProgress(appointmentId: any) {
+  async updatedAppointmentToInProgress(appointmentId: number) {
     await this.db
       .updateTable('appointments')
-      .where('appointments.id', '=', appointmentId)
+      .where('appointments.id', '=', appointmentId as AppointmentsId)
       .set({
         statusId: 2 as any,
       })
       .execute();
   }
 
-  async getAppointmentById(appointmentId: any) {
+  async getAppointmentById(appointmentId: number) {
     return this.db
       .selectFrom('appointments')
       .selectAll()
-      .where('id', '=', appointmentId)
+      .where('id', '=', appointmentId as AppointmentsId)
       .executeTakeFirst();
   }
 
-  async getAppointmentByClient(userId: any) {
+  async getAppointmentByClient(userId: number) {
     return this.db
       .selectFrom('appointments')
       .innerJoin('services', 'services.id', 'appointments.serviceId')
-      .where('userId', '=', userId)
+      .where('userId', '=', convertNumberToUserId(userId))
       .where('statusId', 'in', [1, 2] as any)
       .selectAll()
       .execute();

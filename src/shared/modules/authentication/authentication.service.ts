@@ -11,8 +11,9 @@ import { SignlnRequestDto } from './dtos/request/signln-request.dto';
 import { JwtService } from '@nestjs/jwt';
 import { SignlnResponseDto } from './dtos/response/signln-response-dto';
 import { NotificationService } from '../notifications/notification.service';
-import { ICreateCodeEmailValidation } from './dtos/request/create-code-email-validation.dto';
 import { IResendCodeEmail } from './dtos/request/resend-code-email.dto';
+import { IResetPassword } from './dtos/request/reset-password';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthenticationService {
@@ -51,7 +52,7 @@ export class AuthenticationService {
 
     await this.authenticationRepository.createUser(data);
 
-    const code = this.generateEmailCodeValidation();
+    const code = this.generateCode();
     await this.notication.createEmailCodeVerification({
       email: data.email,
       code,
@@ -104,7 +105,7 @@ export class AuthenticationService {
     }
   }
 
-  generateEmailCodeValidation(): string {
+  generateCode(): string {
     const code = Math.floor(100000 + Math.random() * 900000)
       .toString()
       .padStart(6, '0');
@@ -132,11 +133,50 @@ export class AuthenticationService {
   }
 
   async resendCodeEmail({ email }: IResendCodeEmail) {
-    const code = this.generateEmailCodeValidation();
+    const code = this.generateCode();
     await this.notication.createEmailCodeVerification({
       email,
       code,
     });
     await this.notication.sendEmailVerification({ code, email });
+  }
+
+  async sendCodeChangePasswordToEmail({ email }: any) {
+    const code = this.generateCode();
+    await this.saveCodeChangePassword({
+      email,
+      code,
+    });
+    await this.notication.sendEmailToChangePassword({
+      email,
+      code,
+    });
+  }
+
+  async saveCodeChangePassword({ email, code }: any) {
+    await this.authenticationRepository.saveCodeChangePassword({
+      email,
+      code,
+    });
+  }
+
+  async resetPassword({ email, code, password }: IResetPassword) {
+    const hasCode =
+      await this.authenticationRepository.getCodeChangePassword(code);
+      console.log('its me code', code)
+    if (!hasCode) {
+      throw new BadRequestException('Código expirado ou inválido.');
+    }
+    const currentDate = new Date();
+    if (currentDate > hasCode.expirationAt) {
+      //deletar o codigo
+      throw new BadRequestException('Código expirado ou inválido.');
+    }
+    const hashPassword = await bcrypt.hash(password, 8);
+    await this.authenticationRepository.deleteCodeChangePassword(code)
+    await this.authenticationRepository.resetPassword({
+      email,
+      password: hashPassword,
+    });
   }
 }

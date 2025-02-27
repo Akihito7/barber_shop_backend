@@ -237,7 +237,9 @@ export class ScheduleService {
     const formattedDate = date.toISOString().split('T')[0];
     const startDateWithHour = formattedDate + ' 00:00:00';
     const endDateWithHour = formattedDate + ' 23:59:59';
-    const employee = await this.employeeRepository.getUser(data.barberId);
+    const employee = await this.employeeRepository.getUser(
+      Number(data.barberId),
+    );
     const freeHours = await this.getHoursFreeByEmployees({
       employeeId: data.barberId,
       employeeUsername: employee.username,
@@ -285,7 +287,9 @@ export class ScheduleService {
     const formattedDate = date.toISOString().split('T')[0];
     const startDateWithHour = formattedDate + ' 00:00:00';
     const endDateWithHour = formattedDate + ' 23:59:59';
-    const employee = await this.employeeRepository.getUser(data.barberId);
+    const employee = await this.employeeRepository.getUser(
+      Number(data.barberId),
+    );
     const freeHours = await this.getHoursFreeByEmployees({
       employeeId: data.barberId,
       employeeUsername: employee.username,
@@ -359,7 +363,6 @@ export class ScheduleService {
     const { statusId } = await this.scheduleRepository.getAppointmentById(
       data.appointmentId,
     );
-
     const { paymentStatusId, id: paymentId } =
       await this.paymentService.getPaymentByAppointmentId(data.appointmentId);
 
@@ -370,21 +373,9 @@ export class ScheduleService {
     if (paymentStatusId === 2) {
       throw new ConflictException('Serviço já foi pago.');
     }
-
     if (statusId === 3)
       throw new ConflictException('Serviço já está marcado como finalizado.');
-
-    const { price } = await this.offeringsRepository.getServiceDetails(
-      data.serviceId,
-    );
     await this.scheduleRepository.finishAppointment(data);
-    const registerPayment = {
-      appointmentId: data.appointmentId,
-      paymentDate: new Date(),
-      amount: price,
-      methodPayment: data.methodPayment,
-      paymentStatatusId: 3 as any,
-    };
     await this.scheduleRepository.updatedPaymentToFinish(paymentId);
   }
 

@@ -7,6 +7,7 @@ import type { default as AppointmentsTable } from './Appointments';
 import type { default as PaymentsTable } from './Payments';
 import type { default as AppointmentsStatusTable } from './AppointmentsStatus';
 import type { default as PaymentsStatusTable } from './PaymentsStatus';
+import type { default as PasswordResetTable } from './PasswordReset';
 import type { default as PaymentMethodsTable } from './PaymentMethods';
 import type { default as ServicesTable } from './Services';
 import type { default as EmailVerificationsTable } from './EmailVerifications';
@@ -23,6 +24,8 @@ export default interface PublicSchema {
   appointmentsStatus: AppointmentsStatusTable;
 
   paymentsStatus: PaymentsStatusTable;
+
+  passwordReset: PasswordResetTable;
 
   paymentMethods: PaymentMethodsTable;
 

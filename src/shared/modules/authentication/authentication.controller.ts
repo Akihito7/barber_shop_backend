@@ -1,9 +1,18 @@
-import { Body, Controller, Get, HttpCode, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  Post,
+  Put,
+  Query,
+} from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { SignupRequestDto } from './dtos/request/signup-request-dto';
 import { SignlnRequestDto } from './dtos/request/signln-request.dto';
 import { SignlnResponseDto } from './dtos/response/signln-response-dto';
 import { IAccountActivition } from './dtos/request/account-activation';
+import { IResetPassword } from './dtos/request/reset-password';
 
 @Controller('auth')
 export class AuthenticationController {
@@ -38,5 +47,19 @@ export class AuthenticationController {
     return this.authenticationService.resendCodeEmail({
       email: query.email,
     });
+  }
+
+  @Get('send-code-change-password')
+  async sendCodeChangePassoword(@Query() query) {
+    const email = query.email;
+    console.log('its me email', email);
+    if (!email) return;
+    return this.authenticationService.sendCodeChangePasswordToEmail({ email });
+  }
+
+  @Put('reset-password')
+  @HttpCode(204)
+  async resetPassword(@Body() body: IResetPassword) {
+    return this.authenticationService.resetPassword(body);
   }
 }

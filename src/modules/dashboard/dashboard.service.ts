@@ -1,14 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { DashboardRepository } from './dashboard.repository';
 
 @Injectable()
 export class DashboardService {
   constructor(private readonly dashboardRepository: DashboardRepository) {}
-  async getDailyRevenue(date: string) {
-    const previousDate = new Date(date);
+  async getDailyRevenue(dateString: string) {
+    if (!this.dateIsCorrectFormmat(dateString)) {
+      throw new BadRequestException(
+        'Formato de data invalido. formato esperado mm/dd/yyyyy',
+      );
+    }
+    const previousDate = new Date(dateString);
     previousDate.setDate(previousDate.getDate() - 1);
-    const formattedInitialDate = date + ' 00:00:00';
-    const formmatedEndDate = date + ' 23:59:59';
+    const formattedInitialDate = dateString + ' 00:00:00';
+    const formmatedEndDate = dateString + ' 23:59:59';
 
     const previousFormattedInitialDate =
       previousDate.toISOString().split('T')[0] + ' 00:00:00';
@@ -57,6 +62,11 @@ export class DashboardService {
   }
 
   async getWeeklyRevenue(dateString: string) {
+    if (!this.dateIsCorrectFormmat(dateString)) {
+      throw new BadRequestException(
+        'Formato de data invalido. formato esperado mm/dd/yyyyy',
+      );
+    }
     const previousWeek = new Date(dateString);
     previousWeek.setDate(previousWeek.getDate() - 7);
     const currentMonday = this.getMonday(dateString)
@@ -119,6 +129,11 @@ export class DashboardService {
   }
 
   async getMonthlyRevenue(dateString: string) {
+    if (!this.dateIsCorrectFormmat(dateString)) {
+      throw new BadRequestException(
+        'Formato de data invalido. formato esperado mm/dd/yyyyy',
+      );
+    }
     const formattedInitialDate =
       this.getFirstDayOfMonth(dateString).toISOString().split('T')[0] +
       ' 00:00:00';
@@ -211,6 +226,11 @@ export class DashboardService {
   }
 
   async getTopSellingServices(dateString: string) {
+    if (!this.dateIsCorrectFormmat(dateString)) {
+      throw new BadRequestException(
+        'Formato de data invalido. formato esperado mm/dd/yyyyy',
+      );
+    }
     let formattedInitialDate;
     let formmatedEndDate;
     const date = new Date(dateString);
@@ -236,6 +256,11 @@ export class DashboardService {
   }
 
   async getRevenueBySemester(dateString: string) {
+    if (!this.dateIsCorrectFormmat(dateString)) {
+      throw new BadRequestException(
+        'Formato de data invalido. formato esperado mm/dd/yyyyy',
+      );
+    }
     let formattedInitialDate;
     let formmatedEndDate;
     const date = new Date(dateString);
@@ -265,5 +290,10 @@ export class DashboardService {
       endMonth,
       result,
     };
+  }
+
+  dateIsCorrectFormmat(dateString: string): Boolean {
+    const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$/;
+    return dateRegex.test(dateString);
   }
 }
