@@ -9,6 +9,7 @@ import { convertNumberToUserId } from 'src/utils/convert-number-to-user-id';
 import { AppointmentsId } from 'src/database/schema/public/Appointments';
 import { PaymentsId } from 'src/database/schema/public/Payments';
 import { FinishAppointment } from './dtos/request/finishe-appointment-dto';
+import { UsersId } from 'src/database/schema/public/Users';
 
 @Injectable()
 export class ScheduleRepository {
@@ -113,7 +114,6 @@ export class ScheduleRepository {
     return this.db
       .updateTable('appointments')
       .set({
-        paymentMethod: data.methodPayment,
         statusId: 3 as any,
       })
       .where('appointments.id', '=', data.appointmentId as AppointmentsId)
@@ -168,6 +168,15 @@ export class ScheduleRepository {
       .where('userId', '=', convertNumberToUserId(userId))
       .where('statusId', 'in', [1, 2] as any)
       .selectAll()
+      .execute();
+  }
+
+  async getScheduleHistoryClient(userId: number) {
+    return this.db
+      .selectFrom('appointments as a')
+      .innerJoin('services as s', 's.id', 'a.serviceId')
+      .select(['s.name', 's.duration', 's.price', 'a.startTime'])
+      .where('userId', '=', userId as UsersId)
       .execute();
   }
 }

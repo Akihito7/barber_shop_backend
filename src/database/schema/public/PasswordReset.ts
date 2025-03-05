@@ -16,7 +16,7 @@ export default interface PasswordResetTable {
 
   createdAt: ColumnType<Date, Date | string | undefined, Date | string>;
 
-  expirationAt: ColumnType<Date, Date | string | undefined, Date | string>;
+  expirationAt: ColumnType<Date, Date | string, Date | string>;
 }
 
 export type PasswordReset = Selectable<PasswordResetTable>;

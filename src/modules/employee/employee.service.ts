@@ -54,7 +54,7 @@ export class EmployeeService {
     await this.employeeRepository.createEmployee({
       username,
       email,
-      password,
+      password: await bcrypt.hash(password, 8),
       phoneNumber,
       role,
       roles,

@@ -53,6 +53,7 @@ export class ScheduleController {
   @Post('/finish')
   @HttpCode(201)
   async finishAppointment(@Body() body: FinishAppointment): Promise<void> {
+    console.log("entrei here")
     return this.scheduleService.finishAppointment(body);
   }
 
@@ -63,4 +64,8 @@ export class ScheduleController {
     return this.scheduleService.getAppointmentByClient(req.user.id);
   }
 
+  @Get('history-client')
+  async getScheduleHistoryClient(@Req() req) {
+    return this.scheduleService.getScheduleHistoryClient(req.user.id);
+  }
 }

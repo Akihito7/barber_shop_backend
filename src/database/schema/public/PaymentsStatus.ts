@@ -10,11 +10,11 @@ export type PaymentsStatusId = number & { __brand: 'PaymentsStatusId' };
 export default interface PaymentsStatusTable {
   id: ColumnType<PaymentsStatusId, PaymentsStatusId | undefined, PaymentsStatusId>;
 
-  name: ColumnType<string, string, string>;
+  name: ColumnType<string | null, string | null, string | null>;
 
   description: ColumnType<string | null, string | null, string | null>;
 
-  color: ColumnType<string, string, string>;
+  color: ColumnType<string | null, string | null, string | null>;
 }
 
 export type PaymentsStatus = Selectable<PaymentsStatusTable>;

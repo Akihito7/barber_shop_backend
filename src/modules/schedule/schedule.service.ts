@@ -114,6 +114,7 @@ export class ScheduleService {
         });
       }),
     );
+    console.log(freeHoursByEmployee)
     const generalAvailability = hours.map((hour) => ({
       date,
       hour,
@@ -186,7 +187,7 @@ export class ScheduleService {
     );
     const freeHours = allHours.filter((hour) => !occupiedSlots.has(hour));
     const service = await this.offeringsRepository.getServiceDetails(serviceId);
-    const requiredSlots = service.duration / 30;
+    const requiredSlots = Math.ceil(service.duration / 30);
     const consecutiveFreeHours: string[] = [];
     for (let i = 0; i <= freeHours.length - requiredSlots; i++) {
       const window = freeHours.slice(i, i + requiredSlots);
@@ -273,6 +274,7 @@ export class ScheduleService {
       endTime: endHour,
     });
 
+    console.log("cheguei no create payment")
     await this.paymentService.createPayment({
       appointmentId: result.id,
       amount: service.price,
@@ -386,6 +388,10 @@ export class ScheduleService {
       );
     }
     return this.scheduleRepository.getAppointmentByClient(userId);
+  }
+
+  async getScheduleHistoryClient(userId: number) {
+    return this.scheduleRepository.getScheduleHistoryClient(userId);
   }
 }
 

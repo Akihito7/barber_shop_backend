@@ -33,7 +33,6 @@ export class AuthenticationRepository {
     address,
     cpf,
     photo,
-    role,
   }: SignupRequestDto) {
     try {
       return this.db
@@ -44,7 +43,7 @@ export class AuthenticationRepository {
           password,
           photo,
           address,
-          role,
+          roles: ['client'],
           phoneNumber,
           cpf: cpf ?? null,
           isAccountActive: false,

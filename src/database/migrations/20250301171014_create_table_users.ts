@@ -11,7 +11,6 @@ export async function up(db: Kysely<any>): Promise<void> {
     .addColumn('phone_number', 'varchar', (col) => col)
     .addColumn('cpf', 'varchar', (col) => col)
     .addColumn('address', 'varchar', (col) => col)
-    .addColumn('role', 'varchar', (col) => col.notNull())
     .addColumn('created_at', 'timestamp', (col) =>
       col.defaultTo(sql`CURRENT_TIMESTAMP`),
     )

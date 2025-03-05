@@ -7,16 +7,14 @@ import {
 
 export class SignupRequestDto {
   @IsString()
+  @IsOptional()
   name: string;
-  
+
   @IsString()
   username: string;
 
   @IsEmail()
   email: string;
-
-  @IsString()
-  role: string;
 
   @IsStrongPassword({
     minLength: 8,

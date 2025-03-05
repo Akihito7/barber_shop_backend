@@ -65,13 +65,15 @@ export class AuthenticationService {
       email: data.email,
     });
 
-    if (!user)
-      throw new UnauthorizedException('Email and/or password incorret.');
+    if (!user) throw new UnauthorizedException('Credenciais incorretas.');
+
+    if (!user.isAccountActive)
+      throw new UnauthorizedException('Ative sua conta antes de logar.');
 
     const passwordMatched = await compare(data.password, user.password);
 
     if (!passwordMatched)
-      throw new UnauthorizedException('Email and/or password incorret.');
+      throw new UnauthorizedException('Credenciais incorretas.');
 
     const token = this.jwtService.sign(
       {},
@@ -163,7 +165,7 @@ export class AuthenticationService {
   async resetPassword({ email, code, password }: IResetPassword) {
     const hasCode =
       await this.authenticationRepository.getCodeChangePassword(code);
-      console.log('its me code', code)
+    console.log('its me code', code);
     if (!hasCode) {
       throw new BadRequestException('Código expirado ou inválido.');
     }
@@ -173,7 +175,7 @@ export class AuthenticationService {
       throw new BadRequestException('Código expirado ou inválido.');
     }
     const hashPassword = await bcrypt.hash(password, 8);
-    await this.authenticationRepository.deleteCodeChangePassword(code)
+    await this.authenticationRepository.deleteCodeChangePassword(code);
     await this.authenticationRepository.resetPassword({
       email,
       password: hashPassword,

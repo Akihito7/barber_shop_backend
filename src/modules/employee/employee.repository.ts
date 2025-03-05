@@ -58,12 +58,11 @@ export class EmployeeRepository {
     email,
     password,
     phoneNumber,
-    role,
     roles,
   }: any) {
     await this.db
       .insertInto('users')
-      .values({ username, email, password, phoneNumber, role, roles })
+      .values({ username, email, password, phoneNumber, roles })
       .execute();
   }
 

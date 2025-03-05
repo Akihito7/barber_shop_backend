@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Put,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { OfferingsService } from './offerings.service';
@@ -21,6 +22,7 @@ import { UpdateServiceDto } from './dtos/request/update-service.dto';
 import { IUpdateBarberShop } from './dtos/request/update-barber-dto';
 
 @Controller('offerings')
+@UseGuards(AuthGuard)
 export class OfferingsController {
   private stripe: Stripe;
   constructor(

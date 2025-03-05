@@ -12,7 +12,7 @@ export default interface BarbershopTable {
 
   name: ColumnType<string, string, string>;
 
-  address: ColumnType<string, string, string>;
+  address: ColumnType<string | null, string | null, string | null>;
 
   phone: ColumnType<string | null, string | null, string | null>;
 
@@ -20,7 +20,7 @@ export default interface BarbershopTable {
 
   closingHours: ColumnType<Date, Date | string, Date | string>;
 
-  workingDays: ColumnType<string, string, string>;
+  workingDays: ColumnType<string | null, string | null, string | null>;
 
   description: ColumnType<string | null, string | null, string | null>;
 }

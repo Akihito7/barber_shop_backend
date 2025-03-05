@@ -5,6 +5,4 @@ export class FinishAppointment {
   appointmentId: number;
   @IsNumber()
   serviceId: number;
-  @IsString()
-  methodPayment: string;
 }

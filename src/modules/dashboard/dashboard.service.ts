@@ -1,5 +1,7 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { DashboardRepository } from './dashboard.repository';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale/pt-BR';
 
 @Injectable()
 export class DashboardService {
@@ -11,6 +13,7 @@ export class DashboardService {
       );
     }
     const previousDate = new Date(dateString);
+    const [year, month, day] = dateString.split('-').map(Number);
     previousDate.setDate(previousDate.getDate() - 1);
     const formattedInitialDate = dateString + ' 00:00:00';
     const formmatedEndDate = dateString + ' 23:59:59';
@@ -249,10 +252,23 @@ export class DashboardService {
       formmatedEndDate = `${twelfthMonth.toISOString().split('T')[0]} 23:59:59`;
     }
 
-    return this.dashboardRepository.getTopSellingServices({
+    const services = await this.dashboardRepository.getTopSellingServices({
       formattedInitialDate,
       formmatedEndDate,
     });
+
+    const initialMonthName = format(new Date(formattedInitialDate), 'MMMM', {
+      locale: ptBR,
+    });
+    const endMonthName = format(new Date(formmatedEndDate), 'MMMM', {
+      locale: ptBR,
+    });
+
+    return {
+      initialMonthName,
+      endMonthName,
+      services,
+    };
   }
 
   async getRevenueBySemester(dateString: string) {
